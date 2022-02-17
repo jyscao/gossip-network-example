@@ -1,0 +1,146 @@
+version: '3.3'
+services:
+  node_1:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=1
+      - NUM_NODES=16
+    ports:
+      - 7001:7000
+  node_2:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=2    
+      - NUM_NODES=16
+    ports:
+      - 7002:7000
+  node_3:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=3
+      - NUM_NODES=16
+    ports:
+      - 7003:7000
+  node_4:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=4    
+      - NUM_NODES=16
+    ports:
+      - 7004:7000
+  node_5:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=5    
+      - NUM_NODES=16
+    ports:
+      - 7005:7000
+  node_6:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=6    
+      - NUM_NODES=16
+    ports:
+      - 7006:7000
+  node_7:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=7        
+      - NUM_NODES=16
+    ports:
+      - 7007:7000
+  node_8:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=8    
+      - NUM_NODES=16
+    ports:
+      - 7008:7000
+  node_9:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=9    
+      - NUM_NODES=16
+    ports:
+      - 7009:7000
+  node_10:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=10    
+      - NUM_NODES=16
+    ports:
+      - 7010:7000
+  node_11:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=11    
+      - NUM_NODES=16
+    ports:
+      - 7011:7000
+  node_12:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=12    
+      - NUM_NODES=16
+    ports:
+      - 7012:7000
+  node_13:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=13    
+      - NUM_NODES=16
+    ports:
+      - 7013:7000
+  node_14:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=14        
+      - NUM_NODES=16
+    ports:
+      - 7014:7000
+  node_15:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=15    
+      - NUM_NODES=16
+    ports:
+      - 7015:7000
+  node_16:
+    build: .
+    image: gossip
+    environment:
+      - PORT=7000
+      - NODE_ID=16    
+      - NUM_NODES=16
+    ports:
+      - 7016:7000

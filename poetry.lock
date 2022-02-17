@@ -1,0 +1,14 @@
+[[package]]
+category = "main"
+description = "Pythonic argument parser, that will make you smile"
+name = "docopt"
+optional = false
+python-versions = "*"
+version = "0.6.2"
+
+[metadata]
+content-hash = "cab0f69c3d1a19cba71537e41b0b058bde50707c6631ef99a29c9cd8ef5f9c86"
+python-versions = "^3.7"
+
+[metadata.hashes]
+docopt = ["49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"]
