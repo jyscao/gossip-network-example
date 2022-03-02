@@ -61,8 +61,14 @@ def main():
             print(f"- {message}")
     elif args["remove-node"]:
         node_number = args["<node-number>"]
-        container_name = f"gossip_node_{node_number}_1"
-        subprocess.run([f"docker kill {container_name}"], shell=True)
+        pids_map = sp.read_server_pids_to_map()
+        node_pid = pids_map.pop(node_number)
+        comp_proc = subprocess.run([f"kill {node_pid}"], shell=True)
+        if comp_proc.returncode == 0:
+            print(f"Gossip node {node_number} removed")
+            sp.write_pids_map_to_file(pids_map)
+        else:
+            print(f"Failed to remove Gossip node {node_number}")
 
 
 if __name__ == "__main__":
