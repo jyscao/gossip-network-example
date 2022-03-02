@@ -10,37 +10,23 @@ NUM_NODES = 16
 
 
 def generate_hostname(project, service, index):
-    return "{project}_{service}_{index}_1".format(
-        project=project, service=service, index=index
-    )
+    return f"{project}_{service}_{index}_1"
 
 
 def get_left_peer(node_id, num_nodes):
-    if node_id == 1:
-        return num_nodes
-
-    return node_id - 1
+    return num_nodes if node_id == 1 else node_id - 1
 
 
 def get_right_peer(node_id, num_nodes):
-    if node_id == num_nodes:
-        return 1
-
-    return node_id + 1
+    return 1 if node_id == num_nodes else node_id + 1
 
 
 def get_initial_peers(node_id, port, num_nodes):
-
-    peer_a = (
-        generate_hostname(PROJECT, SERVICE, get_left_peer(node_id, num_nodes))
-        + f":{port}"
-    )
-    peer_b = (
-        generate_hostname(PROJECT, SERVICE, get_right_peer(node_id, num_nodes))
-        + f":{port}"
-    )
-
-    return [peer_a, peer_b]
+    node_l, node_r = get_left_peer(node_id, num_nodes), get_right_peer(node_id, num_nodes)
+    port_l, port_r = 7000 + node_l, 7000 + node_r
+    peer_l = f"{generate_hostname(PROJECT, SERVICE, node_l)}:{port_l}"
+    peer_r = f"{generate_hostname(PROJECT, SERVICE, node_r)}:{port_r}"
+    return [peer_l, peer_r]
 
 
 def start_server(node_id):
