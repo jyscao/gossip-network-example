@@ -24,8 +24,10 @@ def get_port(node_number):
 def main():
     args = docopt(__doc__, version="Gossip 0.1")
 
+    run_srv_cmd = "python3 server.py"
+
     if args["start-network"]:
-        subprocess.run(["docker-compose up --build"], shell=True)
+        subprocess.run([run_srv_cmd], shell=True)
     elif args["stop-network"]:
         subprocess.run(["docker-compose down"], shell=True)
     elif args["send-message"]:

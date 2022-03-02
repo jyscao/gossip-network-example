@@ -1,10 +1,11 @@
 import os
-import sys
+import multiprocessing as mp
 
 from gossip.server import GossipServer
 
 PROJECT = "gossip"
 SERVICE = "node"
+NUM_NODES = 16
 
 
 def generate_hostname(project, service, index):
@@ -41,11 +42,20 @@ def get_initial_peers(node_id, port, num_nodes):
     return [peer_a, peer_b]
 
 
-port = int(os.environ["PORT"])
-node_id = int(os.environ["NODE_ID"])
-num_nodes = int(os.environ["NUM_NODES"])
+def start_server(node_id):
+    port = 7000 + node_id
+    peers = get_initial_peers(node_id, port, NUM_NODES)
+    server = GossipServer(node_id, port, peers)
+    server.start()
 
-peers = get_initial_peers(node_id, port, num_nodes)
 
-server = GossipServer(node_id, port, peers)
-server.start()
+if __name__ == "__main__":
+    pid_map = {0: os.getpid()}    # "0" will be used to denote this parent Python process
+
+    srv_procs = [mp.Process(target=start_server, args=(node_id,)) for node_id in range(1, NUM_NODES+1)]
+    for node_id, proc in enumerate(srv_procs):
+        proc.start()
+        pid_map[node_id] = proc.pid
+
+    for proc in srv_procs:
+        proc.join()
