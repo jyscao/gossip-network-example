@@ -12,6 +12,7 @@ import subprocess
 
 from docopt import docopt
 
+import gossip.server_pids as sp
 from gossip.client import GossipClient
 
 LOCALHOST = "127.0.0.1"
@@ -29,7 +30,13 @@ def main():
     if args["start-network"]:
         subprocess.run([run_srv_cmd], shell=True)
     elif args["stop-network"]:
-        subprocess.run(["docker-compose down"], shell=True)
+        pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
+        comp_proc = subprocess.run([f"echo {pids_ls_str} | xargs -n1 -I% kill %"], shell=True)
+        if comp_proc.returncode == 0:
+            print("Gossip network stopped")
+            sp.write_pids_map_to_file({})
+        else:
+            print("Gossip network stopping failed")
     elif args["send-message"]:
         node_number = args["<node-number>"]
         port = get_port(node_number)

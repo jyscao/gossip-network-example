@@ -1,6 +1,7 @@
 import os
 import multiprocessing as mp
 
+import gossip.server_pids as sp
 from gossip.server import GossipServer
 
 PROJECT = "gossip"
@@ -50,12 +51,14 @@ def start_server(node_id):
 
 
 if __name__ == "__main__":
-    pid_map = {0: os.getpid()}    # "0" will be used to denote this parent Python process
+    pids_map = {0: os.getpid()}    # "0" will be used to denote this parent Python process
 
-    srv_procs = [mp.Process(target=start_server, args=(node_id,)) for node_id in range(1, NUM_NODES+1)]
-    for node_id, proc in enumerate(srv_procs):
+    srv_procs = [mp.Process(target=start_server, args=(node_id,)) for node_id in range(1, NUM_NODES + 1)]
+    for node_id, proc in enumerate(srv_procs, start=1):
         proc.start()
-        pid_map[node_id] = proc.pid
+        pids_map[node_id] = proc.pid
+
+    sp.write_pids_map_to_file(pids_map)
 
     for proc in srv_procs:
         proc.join()
