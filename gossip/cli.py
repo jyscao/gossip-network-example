@@ -25,10 +25,8 @@ def get_port(node_number):
 def main():
     args = docopt(__doc__, version="Gossip 0.1")
 
-    run_srv_cmd = "python3 server.py"
-
     if args["start-network"]:
-        subprocess.run([run_srv_cmd], shell=True)
+        subprocess.run(["python3 start-network.py"], shell=True)
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
         comp_proc = subprocess.run([f"echo {pids_ls_str} | xargs -n1 -I% kill %"], shell=True)
