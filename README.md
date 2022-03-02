@@ -31,10 +31,10 @@ def get_messages() -> List[str]:
 
 ## Installation
 
-This assignment requires you to have Python 3.7 and Docker installed on your system. If you don't already have both, please follow the instructions below:
+This assignment requires you to have Python 3.7 and basic Unix tooling installed on your system. If you don't already have Python, please follow the instructions below:
 
 - [Python setup instructions](https://docs.python.org/3/using/index.html)
-- [Docker CE setup instructions](https://docs.docker.com/install/)
+- Basic Unix command line tools (specifically `kill` & `xargs`) are available by default on Linux and macOS, as well as on Windows through WSL or MinGW.
 
 ### Project setup
 
@@ -52,9 +52,9 @@ poetry install
 
 ## Getting started
 
-We have provided you with a basic template to help you get started on this assignment. This template contains a skeleton Python project, as well as a Docker Compose configuration used to bootstrap a network.
+We have provided you with a basic template to help you get started on this assignment. This template contains a skeleton Python project.
 
-*__Important__: Although it's encouraged, you are not required to use the provided starter code or Docker. Feel free to start from scratch if you don't find it useful.*
+*__Important__: Although it's encouraged, you are not required to use the provided starter code. Feel free to start from scratch if you don't find it useful.*
 
 **GossipClient**
 
@@ -72,11 +72,9 @@ We have provided you with a simple CLI to test your solution.
 
 ### start-network
 
-The `start-network` command spins up a network of 16 nodes using Docker Compose. Each node runs inside its own Docker container and is exposed at a unique port number ranging from 7001-7016.
+The `start-network` command spins up a network of 16 nodes using Python's `multiprocessing` module. Each node runs as a separate Python process and is exposed at a unique port number ranging from 7001-7016.
 
 Each node is initialized with the addresses of two other peers in the network. This creates a simple network topology, but you are encouraged to find more optimal structures.
-
-Docker will automatically build the latest version of your code, so this command can be used to test your solution as you build it.
 
 **Example usage:**
 
