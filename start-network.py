@@ -21,17 +21,19 @@ def get_right_peer(node_id, num_nodes):
     return 1 if node_id == num_nodes else node_id + 1
 
 
+def generate_peer_name(own_node_id, num_nodes, peer_id_getter):
+    peer_node_id = peer_id_getter(own_node_id, num_nodes)
+    peer_port    = 7000 + peer_node_id
+    return f"{generate_hostname(PROJECT, SERVICE, peer_node_id)}:{peer_port}"
+
+
 def get_initial_peers(node_id, port, num_nodes):
-    node_l, node_r = get_left_peer(node_id, num_nodes), get_right_peer(node_id, num_nodes)
-    port_l, port_r = 7000 + node_l, 7000 + node_r
-    peer_l = f"{generate_hostname(PROJECT, SERVICE, node_l)}:{port_l}"
-    peer_r = f"{generate_hostname(PROJECT, SERVICE, node_r)}:{port_r}"
-    return [peer_l, peer_r]
+    return [generate_peer_name(node_id, num_nodes, get_left_peer), generate_peer_name(node_id, num_nodes, get_right_peer)]
 
 
-def start_server(node_id):
+def start_server(node_id, num_nodes):
     port = 7000 + node_id
-    peers = get_initial_peers(node_id, port, NUM_NODES)
+    peers = get_initial_peers(node_id, port, num_nodes)
     server = GossipServer(node_id, port, peers)
     server.start()
 
@@ -39,7 +41,7 @@ def start_server(node_id):
 if __name__ == "__main__":
     pids_map = {0: os.getpid()}    # "0" will be used to denote this parent Python process
 
-    srv_procs = [mp.Process(target=start_server, args=(node_id,)) for node_id in range(1, NUM_NODES + 1)]
+    srv_procs = [mp.Process(target=start_server, args=(node_id, NUM_NODES)) for node_id in range(1, NUM_NODES + 1)]
     for node_id, proc in enumerate(srv_procs, start=1):
         proc.start()
         pids_map[node_id] = proc.pid
