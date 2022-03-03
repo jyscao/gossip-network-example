@@ -19,18 +19,42 @@ class GossipServer:
         self.peer_addrs = peers
         self.peers = [GossipClient(address) for address in peers]
 
+        self.messages = []
+
     def start(self):
         """Starts the server."""
 
         print(f"Starting server {self.node_id} with peers: {self.peer_addrs}")
 
-        with ThreadingTCPServer((LOCALHOST, self.port), GossipMessageHandler) as server:
+        with MsgQueueTCPServer((LOCALHOST, self.port), GossipMessageHandler, self.messages) as server:
             server.serve_forever()
 
 
 class GossipMessageHandler(StreamRequestHandler):
 
     def handle(self):
-        self.data = self.rfile.readline().strip()
-        print(self.data)
-        self.wfile.write(self.data.upper())
+        self._recv_message()
+        print(f"server messge queue: {self.server.msg_q}")
+
+    def _dispatch_cmd(self, cmd):
+        return {
+            "GET": self._send_messages,
+            "NEW": self._recv_message,
+        }[cmd.decode("utf-8")]
+
+    def _recv_message(self):
+        msg = self.rfile.readline()
+        print(f"received message '{msg}' from client")
+        self.server.msg_q.append(msg)
+
+    def _send_messages(self):
+        for msg in self.messages:
+            self.wfile.write(msg)
+
+
+class MsgQueueTCPServer(ThreadingTCPServer):
+
+    def __init__(self, host_port_tup, request_handler, msg_q):
+        super().__init__(host_port_tup, request_handler)
+        self.msg_q = msg_q
+

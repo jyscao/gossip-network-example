@@ -1,15 +1,19 @@
+import socket
+
+
 class GossipClient:
     """A client interface to connect to a server in a peer-to-peer gossip network."""
 
     def __init__(self, address):
-        self.address = address
+        self.host, port = address.split(":")
+        self.port = int(port)
 
     def send_message(self, message):
         """Send a message to the server."""
 
-        # TODO: implement GossipClient.send_message
-
-        return None
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((self.host, self.port))
+            sock.sendall(bytes(message, "utf-8"))
 
     def get_messages(self):
         """Fetch a list of all messages stored by the server."""
