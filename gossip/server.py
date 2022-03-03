@@ -1,6 +1,7 @@
-import time
-
+from socketserver import ThreadingTCPServer, StreamRequestHandler
 from gossip.client import GossipClient
+
+LOCALHOST = "127.0.0.1"
 
 
 class GossipServer:
@@ -15,17 +16,21 @@ class GossipServer:
         self.node_id = node_id
         self.port = port
 
+        self.peer_addrs = peers
         self.peers = [GossipClient(address) for address in peers]
-
-        print(f"Starting server {node_id} with peers: {peers}")
 
     def start(self):
         """Starts the server."""
 
-        # TODO: implement GossipServer.start
+        print(f"Starting server {self.node_id} with peers: {self.peer_addrs}")
 
-        try:
-            while True:
-                time.sleep(5)
-        except KeyboardInterrupt:
-            return
+        with ThreadingTCPServer((LOCALHOST, self.port), GossipMessageHandler) as server:
+            server.serve_forever()
+
+
+class GossipMessageHandler(StreamRequestHandler):
+
+    def handle(self):
+        self.data = self.rfile.readline().strip()
+        print(self.data)
+        self.wfile.write(self.data.upper())
