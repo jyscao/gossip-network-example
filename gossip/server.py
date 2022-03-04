@@ -33,23 +33,21 @@ class GossipServer:
 class GossipMessageHandler(StreamRequestHandler):
 
     def handle(self):
-        self._recv_message()
-        print(f"server messge queue: {self.server.msg_q}")
+        self.cmd, self.msg = self.rfile.readline().decode().split(":", maxsplit=1)
+        self._get_cmd_handler()()
 
-    def _dispatch_cmd(self, cmd):
+    def _get_cmd_handler(self):
         return {
-            "GET": self._send_messages,
-            "NEW": self._recv_message,
-        }[cmd.decode("utf-8")]
+            "/NEW": self._recv_message,
+            "/GET": self._send_messages,
+        }[self.cmd]
 
     def _recv_message(self):
-        msg = self.rfile.readline()
-        print(f"received message '{msg}' from client")
-        self.server.msg_q.append(msg)
+        self.server.msg_q.append(self.msg)
 
     def _send_messages(self):
-        for msg in self.messages:
-            self.wfile.write(msg)
+        for msg in self.server.msg_q:
+            self.wfile.write(bytes(msg, "utf-8"))
 
 
 class MsgQueueTCPServer(ThreadingTCPServer):
@@ -57,4 +55,3 @@ class MsgQueueTCPServer(ThreadingTCPServer):
     def __init__(self, host_port_tup, request_handler, msg_q):
         super().__init__(host_port_tup, request_handler)
         self.msg_q = msg_q
-

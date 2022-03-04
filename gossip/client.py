@@ -8,20 +8,20 @@ class GossipClient:
         self.host, port = address.split(":")
         self.port = int(port)
 
-    def send_message(self, message):
+    def send_message(self, message, is_new=True):
         """Send a message to the server."""
 
+        cmd = "/NEW" if is_new else "/RELAY"
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((self.host, self.port))
-            sock.sendall(bytes(message, "utf-8"))
+            sock.send(bytes(f"{cmd}:{message}", "utf-8"))
 
     def get_messages(self):
         """Fetch a list of all messages stored by the server."""
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((self.host, self.port))
+            sock.send(bytes("/GET:", "utf-8"))
 
-        # TODO: implement GossipClient.get_messages
-
-        return [
-            "Apple (Node 1 -> Node 8 -> Node 10)",
-            "Banana (Node 3 -> Node 5 -> Node 10)",
-            "Orange (Node 7 -> Node 15 -> Node 9 -> Node 10)",
-        ]
+            print("waiting on message from server...")
+            received = str(sock.recv(1024), "utf-8")
+            print(received)
