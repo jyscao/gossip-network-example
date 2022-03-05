@@ -30,6 +30,13 @@ class GossipServer:
             server.serve_forever()
 
 
+class MsgQueueTCPServer(ThreadingTCPServer):
+
+    def __init__(self, host_port_tup, request_handler, msg_q):
+        super().__init__(host_port_tup, request_handler)
+        self.msg_q = msg_q
+
+
 class GossipMessageHandler(StreamRequestHandler):
 
     def handle(self):
@@ -48,10 +55,3 @@ class GossipMessageHandler(StreamRequestHandler):
     def _send_messages(self):
         for msg in self.server.msg_q:
             self.wfile.write(bytes(msg, "utf-8"))
-
-
-class MsgQueueTCPServer(ThreadingTCPServer):
-
-    def __init__(self, host_port_tup, request_handler, msg_q):
-        super().__init__(host_port_tup, request_handler)
-        self.msg_q = msg_q
