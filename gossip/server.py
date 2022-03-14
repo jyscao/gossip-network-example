@@ -1,3 +1,5 @@
+import json
+
 from socketserver import ThreadingTCPServer, StreamRequestHandler
 from gossip.client import GossipClient
 
@@ -53,5 +55,5 @@ class GossipMessageHandler(StreamRequestHandler):
         self.server.msg_q.append(self.msg)
 
     def _send_messages(self):
-        for msg in self.server.msg_q:
-            self.wfile.write(bytes(msg, "utf-8"))
+        msg = json.dumps(self.server.msg_q)
+        self.wfile.write(bytes(msg, "utf-8"))
