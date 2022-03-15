@@ -9,15 +9,14 @@ LOCALHOST = "127.0.0.1"
 
 @dataclass
 class ServerSettings:
-    node_id: int
-    port: int
+    node_id:    int
+    port:       int
     peer_addrs: list[str]
-    msg_box: list[tuple[str, list[int]]] = field(default_factory=list)
+    peers:      list[GossipClient] = field(init=False)
+    msg_box:    list[tuple[str, list[int]]] = field(default_factory=list)
 
-    #  @property
-    #  def peers(self):
-    #      # TODO: avoid instantiating new peer objects each time?
-    #      return [GossipClient(addr) for addr in self.peer_addrs]
+    def __post_init__(self):
+        self.peers = [GossipClient(addr) for addr in self.peer_addrs]
 
 
 class GossipServer:
