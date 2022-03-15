@@ -55,13 +55,17 @@ class GossipMessageHandler(StreamRequestHandler):
 
     def _get_cmd_handler(self):
         return {
-            "/NEW": self._recv_message,
-            "/GET": self._send_messages,
+            "/NEW":   self._store_msg,
+            "/GET":   self._send_msgs,
+            "/RELAY": self._relay_msg,
         }[self.cmd]
 
-    def _recv_message(self):
+    def _store_msg(self):
         self.server.ss.msg_box.append(self.msg)
 
-    def _send_messages(self):
+    def _send_msgs(self):
         msg = json.dumps(self.server.ss.msg_box)
         self.wfile.write(bytes(msg, "utf-8"))
+
+    def _relay_msg(self):
+        pass
