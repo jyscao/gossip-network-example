@@ -70,8 +70,9 @@ class GossipMessageHandler(StreamRequestHandler):
         self.server.ss.msg_box.append(msg_tup)
 
     def _send_msgs(self, _):
-        msg = json.dumps(self.server.ss.msg_box)
-        self.wfile.write(bytes(msg, "utf-8"))
+        f_n = lambda n: f"Node {str(n)}"
+        messages = json.dumps([f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box])
+        self.wfile.write(bytes(messages, "utf-8"))
 
     def _relay_msg(self, msg_tup):
         pass
