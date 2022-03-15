@@ -50,7 +50,7 @@ class GossipMessageHandler(StreamRequestHandler):
 
     def handle(self):
         self.cmd, self.msg = self.rfile.readline().decode().split(":", maxsplit=1)
-        self._get_cmd_handler()()
+        self._get_cmd_handler()(self._get_handler_args())
 
     def _get_cmd_handler(self):
         return {
@@ -59,12 +59,19 @@ class GossipMessageHandler(StreamRequestHandler):
             "/RELAY": self._relay_msg,
         }[self.cmd]
 
-    def _store_msg(self):
-        self.server.ss.msg_box.append(self.msg)
+    def _get_handler_args(self):
+        return {
+            "/NEW":   (self.msg, [self.server.ss.node_id]),
+            "/GET":   None,
+            "/RELAY": (self.msg, ["HELLO", "WORLD"]),
+        }[self.cmd]
 
-    def _send_msgs(self):
+    def _store_msg(self, msg_tup):
+        self.server.ss.msg_box.append(msg_tup)
+
+    def _send_msgs(self, _):
         msg = json.dumps(self.server.ss.msg_box)
         self.wfile.write(bytes(msg, "utf-8"))
 
-    def _relay_msg(self):
+    def _relay_msg(self, msg_tup):
         pass
