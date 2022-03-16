@@ -48,25 +48,26 @@ class MsgQueueTCPServer(ThreadingTCPServer):
 class GossipMessageHandler(StreamRequestHandler):
 
     def handle(self):
-        self.cmd, self.msg = self.rfile.readline().decode().split(":", maxsplit=1)
-        self._get_cmd_handler()(self._get_handler_args())
+        self.cmd, self.msg_data = self.rfile.readline().decode().split(":", maxsplit=1)
+        self._get_cmd_handler()()
 
     def _get_cmd_handler(self):
         return {
-            "/NEW":   self._store_msg,
-            "/GET":   self._dump_msgs,
-            "/RELAY": self._relay_msg,
+            "/NEW":   self._proc_new_msg,
+            "/GET":   self._show_client_msgs,
+            "/RELAY": self._proc_relayed_msg,
         }[self.cmd]
 
-    def _get_handler_args(self):
-        return {
-            "/NEW":   (self.msg, [self.server.ss.node_id]),
-            "/GET":   None,
-            "/RELAY": (self.msg, ["HELLO", "WORLD"]),
-        }[self.cmd]
+    def _proc_new_msg(self):
+        msg_tup = (self.msg_data, [self.server.ss.node_id])
+        self.src_node = None
+        self.server.ss.msg_box.append(msg_tup)
+        self._send_to_peers(msg_tup)
 
-    def _write_json_msg(self, data):
-        self.wfile.write(bytes(json.dumps(data), "utf-8"))
+    def _show_client_msgs(self):
+        f_n  = lambda n: f"Node {str(n)}"
+        msgs_list = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box]
+        self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
 
     def _store_msg(self, msg_tup):
         self.server.ss.msg_box.append(msg_tup)
