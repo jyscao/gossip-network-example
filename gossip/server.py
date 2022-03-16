@@ -66,13 +66,16 @@ class GossipMessageHandler(StreamRequestHandler):
             "/RELAY": (self.msg, ["HELLO", "WORLD"]),
         }[self.cmd]
 
+    def _write_json_msg(self, data):
+        self.wfile.write(bytes(json.dumps(data), "utf-8"))
+
     def _store_msg(self, msg_tup):
         self.server.ss.msg_box.append(msg_tup)
 
     def _dump_msgs(self, _):
-        f_n = lambda n: f"Node {str(n)}"
-        messages = json.dumps([f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box])
-        self.wfile.write(bytes(messages, "utf-8"))
+        f_n  = lambda n: f"Node {str(n)}"
+        msgs = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box]
+        self._write_json_msg(msgs)
 
     def _relay_msg(self, msg_tup):
         pass
