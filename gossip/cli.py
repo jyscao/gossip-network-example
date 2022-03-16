@@ -16,10 +16,11 @@ import gossip.server_pids as sp
 from gossip.client import GossipClient
 
 LOCALHOST = "127.0.0.1"
+PORTS_ORIGIN = 7000
 
 
 def get_port(node_number):
-    return 7000 + int(node_number)
+    return PORTS_ORIGIN + int(node_number)
 
 
 def main():

@@ -5,6 +5,7 @@ import gossip.server_pids as sp
 from gossip.server import GossipServer
 
 LOCALHOST = "127.0.0.1"
+PORTS_ORIGIN = 7000
 NUM_NODES = 16
 
 
@@ -18,7 +19,7 @@ def get_right_peer(node_id, num_nodes):
 
 def generate_peer_name(own_node_id, num_nodes, peer_id_getter):
     peer_node_id = peer_id_getter(own_node_id, num_nodes)
-    peer_port    = 7000 + peer_node_id
+    peer_port    = PORTS_ORIGIN + peer_node_id
     # TODO: generate more readable/distinctive peer names
     return f"{LOCALHOST}:{peer_port}"
 
@@ -28,7 +29,7 @@ def get_initial_peers(node_id, port, num_nodes):
 
 
 def start_server(node_id, num_nodes):
-    port = 7000 + node_id
+    port = PORTS_ORIGIN + node_id
     peers = get_initial_peers(node_id, port, num_nodes)
     server = GossipServer(node_id, port, peers)
     server.start()
