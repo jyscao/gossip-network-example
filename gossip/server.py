@@ -59,10 +59,8 @@ class GossipMessageHandler(StreamRequestHandler):
         }[self.cmd]
 
     def _proc_new_msg(self):
-        msg_tup = (self.msg_data, [self.server.ss.node_id])
         self.src_node = None
-        self.server.ss.msg_box.append(msg_tup)
-        self._send_to_peers(msg_tup)
+        self._store_and_relay((self.msg_data, [self.server.ss.node_id]))
 
     def _show_client_msgs(self):
         f_n  = lambda n: f"Node {str(n)}"
@@ -73,8 +71,9 @@ class GossipMessageHandler(StreamRequestHandler):
         msg, nodes = json.loads(self.msg_data)
         self.src_node = nodes[-1]
         nodes.append(self.server.ss.node_id)
+        self._store_and_relay((msg, nodes))
 
-        msg_tup = (msg, nodes)
+    def _store_and_relay(self, msg_tup):
         self.server.ss.msg_box.append(msg_tup)
         self._send_to_peers(msg_tup)
 
