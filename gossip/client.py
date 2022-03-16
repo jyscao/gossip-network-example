@@ -1,11 +1,14 @@
 import socket, json
 
+from gossip.constants import *
+
 
 class GossipClient:
     """A client interface to connect to a server in a peer-to-peer gossip network."""
 
     def __init__(self, address):
         host, port = address.split(":")
+        self.id = int(port) - PORTS_ORIGIN
         self.host_port_tup = (host, int(port))
 
     def send_message(self, message, is_relay=False):

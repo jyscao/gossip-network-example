@@ -1,10 +1,9 @@
-import json
+import socket, json
 from dataclasses import dataclass, field
 
 from socketserver import ThreadingTCPServer, StreamRequestHandler
 from gossip.client import GossipClient
-
-LOCALHOST = "127.0.0.1"
+from gossip.constants import *
 
 
 @dataclass

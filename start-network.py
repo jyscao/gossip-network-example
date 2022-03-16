@@ -3,10 +3,7 @@ import multiprocessing as mp
 
 import gossip.server_pids as sp
 from gossip.server import GossipServer
-
-LOCALHOST = "127.0.0.1"
-PORTS_ORIGIN = 7000
-NUM_NODES = 16
+from gossip.constants import *
 
 
 def get_left_peer(node_id, num_nodes):
