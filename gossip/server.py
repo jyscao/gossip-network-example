@@ -69,13 +69,21 @@ class GossipMessageHandler(StreamRequestHandler):
         msgs_list = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box]
         self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
 
-    def _store_msg(self, msg_tup):
+    def _proc_relayed_msg(self):
+        msg, nodes = json.loads(self.msg_data)
+        self.src_node = nodes[-1]
+        nodes.append(self.server.ss.node_id)
+
+        msg_tup = (msg, nodes)
         self.server.ss.msg_box.append(msg_tup)
+        self._send_to_peers(msg_tup)
 
-    def _dump_msgs(self, _):
-        f_n  = lambda n: f"Node {str(n)}"
-        msgs = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box]
-        self._write_json_msg(msgs)
+    def _send_to_peers(self, data):
+        if self.src_node is not None:
+            # filter out the source node of the current message
+            peers = [p for p in self.server.ss.peers if p.id != self.src_node]
+        else:
+            peers = self.server.ss.peers
 
-    def _relay_msg(self, msg_tup):
-        pass
+        for p in peers:
+            p.send_message(json.dumps(data), is_relay=True)
