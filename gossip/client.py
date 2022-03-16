@@ -9,10 +9,11 @@ class GossipClient:
     def __init__(self, address):
         host, port = address.split(":")
         self.id = int(port) - PORTS_ORIGIN
+        self.node_name = f"Gossip-Node-{self.id}"
         self.host_port_tup = (host, int(port))
 
     def __repr__(self):
-        return f"Gossip-Node-{self.id}"
+        return self.node_name
 
     def send_message(self, message, is_relay=False):
         """Send a message to the server."""
