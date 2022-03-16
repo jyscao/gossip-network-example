@@ -60,10 +60,9 @@ class GossipMessageHandler(StreamRequestHandler):
         }[self.cmd]
 
     def _proc_new_msg(self):
-        self.origin_node, self.prev_node = self.server.ss.node_id, None
         new_msg_timestamp = time.time_ns()
         self.msg_id = f"{self.msg_data}_{new_msg_timestamp}"
-        self._store_and_relay((self.msg_data, new_msg_timestamp, [self.origin_node]))
+        self._store_and_relay((self.msg_data, new_msg_timestamp, [self.server.ss.node_id]))
 
     def _proc_relayed_msg(self):
         msg, timestamp, nodes = json.loads(self.msg_data)
@@ -98,8 +97,8 @@ class GossipMessageHandler(StreamRequestHandler):
             return self.server.ss.peers
         elif self.cmd == "/RELAY" and self._is_msg_originator():
             return []
-        elif self.prev_node is not None:
-            # filter out the source node of the current message
+        elif self.cmd == "/RELAY":  # not self._is_msg_originator() == True
+            # filter out the preceeding node which relayed the current message to this node
             return [p for p in self.server.ss.peers if p.id != self.prev_node]
         else:
             raise Exception("this should never be reached!")
