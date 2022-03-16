@@ -7,10 +7,11 @@ class GossipClient:
     """A client interface to connect to a server in a peer-to-peer gossip network."""
 
     def __init__(self, address):
-        host, port = address.split(":")
+        self.address = address
+        host, port = self.address.split(":")
+        self.host_port_tup = (host, int(port))
         self.id = int(port) - PORTS_ORIGIN
         self.node_name = f"Gossip-Node-{self.id}"
-        self.host_port_tup = (host, int(port))
 
     def __repr__(self):
         return self.node_name
