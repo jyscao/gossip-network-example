@@ -31,7 +31,7 @@ class GossipServer:
     def start(self):
         """Starts the server."""
 
-        print(f"Starting server {self.ss.node_id} with peers: {self.ss.peer_addrs}")
+        print(f"Starting server {self.ss.node_id} with peers: {self.ss.peers}")
 
         host_port_tup = (LOCALHOST, self.ss.port)
         with MsgQueueTCPServer(host_port_tup, GossipMessageHandler, self.ss) as server:

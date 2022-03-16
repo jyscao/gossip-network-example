@@ -17,7 +17,6 @@ def get_right_peer(node_id, num_nodes):
 def generate_peer_name(own_node_id, num_nodes, peer_id_getter):
     peer_node_id = peer_id_getter(own_node_id, num_nodes)
     peer_port    = PORTS_ORIGIN + peer_node_id
-    # TODO: generate more readable/distinctive peer names
     return f"{LOCALHOST}:{peer_port}"
 
 

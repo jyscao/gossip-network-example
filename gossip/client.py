@@ -11,6 +11,9 @@ class GossipClient:
         self.id = int(port) - PORTS_ORIGIN
         self.host_port_tup = (host, int(port))
 
+    def __repr__(self):
+        return f"Gossip-Node-{self.id}"
+
     def send_message(self, message, is_relay=False):
         """Send a message to the server."""
 
