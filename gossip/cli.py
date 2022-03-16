@@ -20,12 +20,17 @@ from gossip.constants import *
 def get_port(node_number):
     return PORTS_ORIGIN + int(node_number)
 
+def init_gossip_client(node_number):
+    node_addr = f"{LOCALHOST}:{get_port(node_number)}"
+    return GossipClient(node_addr)
+
 
 def main():
     args = docopt(__doc__, version="Gossip 0.1")
 
     if args["start-network"]:
         subprocess.run(["python3 start-network.py"], shell=True)
+
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
         comp_proc = subprocess.run([f"echo {pids_ls_str} | xargs -n1 -I% kill %"], shell=True)
@@ -34,28 +39,20 @@ def main():
             sp.write_pids_map_to_file({})
         else:
             print("Gossip network stopping failed")
+
     elif args["send-message"]:
-        node_number = args["<node-number>"]
-        port = get_port(node_number)
-        address = f"{LOCALHOST}:{port}"
-
         message = args["<message>"]
-
-        client = GossipClient(address)
+        client = init_gossip_client(args["<node-number>"])
         client.send_message(message)
+        print(f"Message sent to {client}")
 
-        print(f"Message sent to {address}")
     elif args["get-messages"]:
-        node_number = args["<node-number>"]
-        port = get_port(node_number)
-        address = f"{LOCALHOST}:{port}"
-
-        client = GossipClient(address)
+        client = init_gossip_client(args["<node-number>"])
         messages = client.get_messages()
+        print(f"Fetched messages from {client}")
+        for msg in messages:
+            print(f"- {msg}")
 
-        print(f"Fetched messages from {address}")
-        for message in messages:
-            print(f"- {message}")
     elif args["remove-node"]:
         node_number = args["<node-number>"]
         pids_map = sp.read_server_pids_to_map()

@@ -9,19 +9,17 @@ from gossip.constants import *
 def get_left_peer(node_id, num_nodes):
     return num_nodes if node_id == 1 else node_id - 1
 
-
 def get_right_peer(node_id, num_nodes):
     return 1 if node_id == num_nodes else node_id + 1
 
 
-def generate_peer_name(own_node_id, num_nodes, peer_id_getter):
+def generate_peer_addr(own_node_id, num_nodes, peer_id_getter):
     peer_node_id = peer_id_getter(own_node_id, num_nodes)
     peer_port    = PORTS_ORIGIN + peer_node_id
     return f"{LOCALHOST}:{peer_port}"
 
-
 def get_initial_peers(node_id, port, num_nodes):
-    return [generate_peer_name(node_id, num_nodes, get_left_peer), generate_peer_name(node_id, num_nodes, get_right_peer)]
+    return [generate_peer_addr(node_id, num_nodes, get_left_peer), generate_peer_addr(node_id, num_nodes, get_right_peer)]
 
 
 def start_server(node_id, num_nodes):
