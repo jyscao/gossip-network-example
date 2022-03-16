@@ -78,11 +78,12 @@ class GossipMessageHandler(StreamRequestHandler):
         self._send_to_peers(msg_tup)
 
     def _send_to_peers(self, data):
+        for p in self._get_peers_to_relay():
+            p.send_message(json.dumps(data), is_relay=True)
+
+    def _get_peers_to_relay(self):
         if self.src_node is not None:
             # filter out the source node of the current message
-            peers = [p for p in self.server.ss.peers if p.id != self.src_node]
+            return [p for p in self.server.ss.peers if p.id != self.src_node]
         else:
-            peers = self.server.ss.peers
-
-        for p in peers:
-            p.send_message(json.dumps(data), is_relay=True)
+            return self.server.ss.peers
