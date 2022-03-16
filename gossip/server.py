@@ -55,7 +55,7 @@ class GossipMessageHandler(StreamRequestHandler):
     def _get_cmd_handler(self):
         return {
             "/NEW":   self._store_msg,
-            "/GET":   self._send_msgs,
+            "/GET":   self._dump_msgs,
             "/RELAY": self._relay_msg,
         }[self.cmd]
 
@@ -69,7 +69,7 @@ class GossipMessageHandler(StreamRequestHandler):
     def _store_msg(self, msg_tup):
         self.server.ss.msg_box.append(msg_tup)
 
-    def _send_msgs(self, _):
+    def _dump_msgs(self, _):
         f_n = lambda n: f"Node {str(n)}"
         messages = json.dumps([f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box])
         self.wfile.write(bytes(messages, "utf-8"))

@@ -8,13 +8,13 @@ class GossipClient:
         self.host, port = address.split(":")
         self.port = int(port)
 
-    def send_message(self, message, is_new=True):
+    def send_message(self, message, is_relay=False):
         """Send a message to the server."""
 
-        cmd = "/NEW" if is_new else "/RELAY"
+        cmd, msg = ("/RELAY", json.dumps(message)) if is_relay else ("/NEW", message)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((self.host, self.port))
-            sock.send(bytes(f"{cmd}:{message}", "utf-8"))
+            sock.send(bytes(f"{cmd}:{msg}", "utf-8"))
 
     def get_messages(self):
         """Fetch a list of all messages stored by the server."""
