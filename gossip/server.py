@@ -72,8 +72,7 @@ class GossipMessageHandler(StreamRequestHandler):
         self._store_and_relay((msg, timestamp, nodes))
 
     def _show_client_msgs(self):
-        f_n  = lambda n: f"Node {str(n)}"
-        msgs_list = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, _, nodes in self.server.ss.msg_box]
+        msgs_list = [f"{msg} ({' ➜ '.join(str(n) for n in nodes)})" for msg, _, nodes in self.server.ss.msg_box]
         self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
 
     def _store_and_relay(self, msg_tup):
