@@ -19,14 +19,12 @@ class GossipClient:
 
         cmd = "/RELAY" if is_relay else "/NEW"
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(self.host_port_tup)
-            sock.send(bytes(f"{cmd}:{message}", "utf-8"))
+            self._send_to_socket(sock, f"{cmd}:{message}")
 
     def get_messages(self):
         """Fetch a list of all messages stored by the server."""
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(self.host_port_tup)
-            sock.send(bytes("/GET:\n", "utf-8"))
+            self._send_to_socket(sock, "/GET:\n")
 
             recvd_msgs_ls = []
             while True:
@@ -36,3 +34,7 @@ class GossipClient:
                 recvd_msgs_ls.append(received)
 
         return json.loads("".join(recvd_msgs_ls))
+
+    def _send_to_socket(self, sock, cmd_data):
+        sock.connect(self.host_port_tup)
+        sock.send(bytes(cmd_data, "utf-8"))
