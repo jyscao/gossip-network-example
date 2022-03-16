@@ -54,18 +54,13 @@ class GossipMessageHandler(StreamRequestHandler):
     def _get_cmd_handler(self):
         return {
             "/NEW":   self._proc_new_msg,
-            "/GET":   self._show_client_msgs,
             "/RELAY": self._proc_relayed_msg,
+            "/GET":   self._show_client_msgs,
         }[self.cmd]
 
     def _proc_new_msg(self):
         self.src_node = None
         self._store_and_relay((self.msg_data, [self.server.ss.node_id]))
-
-    def _show_client_msgs(self):
-        f_n  = lambda n: f"Node {str(n)}"
-        msgs_list = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box]
-        self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
 
     def _proc_relayed_msg(self):
         msg, nodes = json.loads(self.msg_data)
@@ -73,11 +68,16 @@ class GossipMessageHandler(StreamRequestHandler):
         nodes.append(self.server.ss.node_id)
         self._store_and_relay((msg, nodes))
 
+    def _show_client_msgs(self):
+        f_n  = lambda n: f"Node {str(n)}"
+        msgs_list = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box]
+        self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
+
     def _store_and_relay(self, msg_tup):
         self.server.ss.msg_box.append(msg_tup)
-        self._send_to_peers(msg_tup)
+        self._relay_to_peers(msg_tup)
 
-    def _send_to_peers(self, data):
+    def _relay_to_peers(self, data):
         for p in self._get_peers_to_relay():
             p.send_message(json.dumps(data), is_relay=True)
 
