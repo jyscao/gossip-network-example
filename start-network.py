@@ -4,13 +4,8 @@ import multiprocessing as mp
 import gossip.server_pids as sp
 from gossip.server import GossipServer
 
-PROJECT = "gossip"
-SERVICE = "node"
+LOCALHOST = "127.0.0.1"
 NUM_NODES = 16
-
-
-def generate_hostname(project, service, index):
-    return f"{project}_{service}_{index}_1"
 
 
 def get_left_peer(node_id, num_nodes):
@@ -24,7 +19,8 @@ def get_right_peer(node_id, num_nodes):
 def generate_peer_name(own_node_id, num_nodes, peer_id_getter):
     peer_node_id = peer_id_getter(own_node_id, num_nodes)
     peer_port    = 7000 + peer_node_id
-    return f"{generate_hostname(PROJECT, SERVICE, peer_node_id)}:{peer_port}"
+    # TODO: generate more readable/distinctive peer names
+    return f"{LOCALHOST}:{peer_port}"
 
 
 def get_initial_peers(node_id, port, num_nodes):
