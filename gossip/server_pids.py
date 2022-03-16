@@ -1,4 +1,4 @@
-import os, json
+import json
 
 
 # .server_pids.json is used by cli.py to stop the network & remove nodes
