@@ -82,11 +82,15 @@ class GossipMessageHandler(StreamRequestHandler):
             p.send_message(json.dumps(data), is_relay=True)
 
     def _get_peers_to_relay(self):
-        if self.prev_node is not None:
+        if self.cmd == "/NEW":
+            return self.server.ss.peers
+        elif self.cmd == "/RELAY" and self._is_msg_originator():
+            return []
+        elif self.prev_node is not None:
             # filter out the source node of the current message
             return [p for p in self.server.ss.peers if p.id != self.prev_node]
         else:
-            return self.server.ss.peers
+            raise Exception("this should never be reached!")
 
     def _is_msg_originator(self):
         return self.server.ss.node_id == self.origin_node
