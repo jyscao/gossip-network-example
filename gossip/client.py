@@ -27,8 +27,8 @@ class GossipClient:
         """Fetch a list of all messages stored by the server."""
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             self._send_to_socket(sock, "/GET:\n")
-            all_messages = self._recv_server_response(sock)
-        return json.loads(all_messages)
+            msgs_ls = self._recv_server_response(sock)
+        return msgs_ls
 
     def _send_to_socket(self, sock, cmd_data):
         sock.connect(self.host_port_tup)
@@ -41,4 +41,4 @@ class GossipClient:
             if received == "":
                 break
             response_ls.append(received)
-        return "".join(response_ls)
+        return json.loads("".join(response_ls))
