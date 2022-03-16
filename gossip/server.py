@@ -59,12 +59,12 @@ class GossipMessageHandler(StreamRequestHandler):
         }[self.cmd]
 
     def _proc_new_msg(self):
-        self.src_node = None
+        self.prev_node = None
         self._store_and_relay((self.msg_data, [self.server.ss.node_id]))
 
     def _proc_relayed_msg(self):
         msg, nodes = json.loads(self.msg_data)
-        self.src_node = nodes[-1]
+        self.prev_node = nodes[-1]
         nodes.append(self.server.ss.node_id)
         self._store_and_relay((msg, nodes))
 
@@ -82,8 +82,8 @@ class GossipMessageHandler(StreamRequestHandler):
             p.send_message(json.dumps(data), is_relay=True)
 
     def _get_peers_to_relay(self):
-        if self.src_node is not None:
+        if self.prev_node is not None:
             # filter out the source node of the current message
-            return [p for p in self.server.ss.peers if p.id != self.src_node]
+            return [p for p in self.server.ss.peers if p.id != self.prev_node]
         else:
             return self.server.ss.peers
