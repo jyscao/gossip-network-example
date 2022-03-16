@@ -1,4 +1,4 @@
-import socket, json
+import socket, json, time
 from dataclasses import dataclass, field
 
 from socketserver import ThreadingTCPServer, StreamRequestHandler
@@ -12,7 +12,8 @@ class ServerSettings:
     port:       int
     peer_addrs: list[str]
     peers:      list[GossipClient] = field(init=False)
-    msg_box:    list[tuple[str, list[int]]] = field(default_factory=list)
+    msg_box:    list[tuple[str, int, list[int]]] = field(default_factory=list)
+    msg_id_set: set[str] = field(default_factory=set)
 
     def __post_init__(self):
         self.peers = [GossipClient(addr) for addr in self.peer_addrs]
@@ -60,22 +61,33 @@ class GossipMessageHandler(StreamRequestHandler):
 
     def _proc_new_msg(self):
         self.origin_node, self.prev_node = self.server.ss.node_id, None
-        self._store_and_relay((self.msg_data, [self.origin_node]))
+        new_msg_timestamp = time.time_ns()
+        self.msg_id = f"{self.msg_data}_{new_msg_timestamp}"
+        self._store_and_relay((self.msg_data, new_msg_timestamp, [self.origin_node]))
 
     def _proc_relayed_msg(self):
-        msg, nodes = json.loads(self.msg_data)
+        msg, timestamp, nodes = json.loads(self.msg_data)
+        self.msg_id = f"{msg}_{timestamp}"
         self.origin_node, self.prev_node = nodes[0], nodes[-1]
         nodes.append(self.server.ss.node_id)
-        self._store_and_relay((msg, nodes))
+        self._store_and_relay((msg, timestamp, nodes))
 
     def _show_client_msgs(self):
         f_n  = lambda n: f"Node {str(n)}"
-        msgs_list = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, nodes in self.server.ss.msg_box]
+        msgs_list = [f"{msg} ({' -> '.join(f_n(n) for n in nodes)})" for msg, _, nodes in self.server.ss.msg_box]
         self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
 
     def _store_and_relay(self, msg_tup):
-        self.server.ss.msg_box.append(msg_tup)
-        self._relay_to_peers(msg_tup)
+        if self.msg_id not in self.server.ss.msg_id_set:
+            self.server.ss.msg_box.append(msg_tup)
+            # TODO: add ability to store all paths taken by relayed message in gossip network
+            self.server.ss.msg_id_set.add(self.msg_id)
+
+        if True:
+            # TODO: implement checks to track if the same message has already been relayed to peers currently,
+            # it's not a problem b/c all nodes are circularly-connected, and transmission stops at the origin
+            # node; but transmission stoppage is not guaranteed when nodes are connected as an arbitrary graph
+            self._relay_to_peers(msg_tup)
 
     def _relay_to_peers(self, data):
         for p in self._get_peers_to_relay():
