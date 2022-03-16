@@ -26,16 +26,18 @@ class GossipClient:
         """Fetch a list of all messages stored by the server."""
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             self._send_to_socket(sock, "/GET:\n")
-
-            recvd_msgs_ls = []
-            while True:
-                received = str(sock.recv(1024), "utf-8")
-                if received == "":
-                    break
-                recvd_msgs_ls.append(received)
-
-        return json.loads("".join(recvd_msgs_ls))
+            all_messages = self._recv_server_response(sock)
+        return json.loads(all_messages)
 
     def _send_to_socket(self, sock, cmd_data):
         sock.connect(self.host_port_tup)
         sock.send(bytes(cmd_data, "utf-8"))
+
+    def _recv_server_response(self, sock):
+        response_ls = []
+        while True:
+            received = str(sock.recv(1024), "utf-8")
+            if received == "":
+                break
+            response_ls.append(received)
+        return "".join(response_ls)
