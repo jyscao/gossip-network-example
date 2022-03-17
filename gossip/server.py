@@ -57,6 +57,7 @@ class GossipMessageHandler(StreamRequestHandler):
             "/NEW":   self._proc_new_msg,
             "/RELAY": self._proc_relayed_msg,
             "/GET":   self._show_client_msgs,
+            "/PEERS": self._get_peers_info,
         }[self.cmd]
 
     def _proc_new_msg(self):
@@ -74,6 +75,10 @@ class GossipMessageHandler(StreamRequestHandler):
     def _show_client_msgs(self):
         msgs_list = [f"{msg} ({' ➜ '.join(str(n) for n in nodes)})" for msg, _, nodes in self.server.ss.msg_box]
         self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
+
+    def _get_peers_info(self):
+        peers_info = [(p.id, f"{p.node_name} ({p.address})") for p in self.server.ss.peers]
+        self.wfile.write(bytes(json.dumps(peers_info), "utf-8"))
 
     def _store_and_relay(self, msg_tup):
         if self.msg_id not in self.server.ss.msg_id_set:

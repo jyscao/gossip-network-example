@@ -6,6 +6,7 @@ Usage:
   gossip send-message <node-number> <message>
   gossip get-messages <node-number>
   gossip remove-node <node-number>
+  gossip list-peers <node-number>
 """
 
 import subprocess
@@ -63,6 +64,16 @@ def main():
             sp.write_pids_map_to_file(pids_map)
         else:
             print(f"Failed to remove Gossip node {node_number}")
+
+    elif args["list-peers"]:
+        client = init_gossip_client(args["<node-number>"])
+        peer_names = client.get_peers_info(get_display_name=True)
+        print(f"{client} has peers:")
+        for pn in peer_names:
+            print(f"* {pn}")
+
+    else:
+        raise Exception("this should never be reached!")
 
 
 if __name__ == "__main__":

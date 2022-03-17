@@ -25,6 +25,19 @@ class GossipClient:
         """Fetch a list of all messages stored by the server."""
         return self._send_to_then_get_from_server("/GET:\n")
 
+    def get_peers_info(self, get_ids=False, get_display_name=False):
+        """Fetch a list of all peers connected to the server."""
+        peer_ids, peer_names = zip(*self._send_to_then_get_from_server("/PEERS:\n"))
+
+        if get_ids and get_display_name:
+            return peer_ids, peer_names
+        elif get_ids:
+            return peer_ids
+        elif get_display_name:
+            return peer_names
+        else:
+            raise Exception("must fetch either peer IDs or peer names")
+
     def _send_to_server(self, cmd_data):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             self._send_to_socket(sock, cmd_data)
