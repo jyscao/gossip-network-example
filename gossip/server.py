@@ -58,6 +58,7 @@ class GossipMessageHandler(StreamRequestHandler):
             "/RELAY": self._proc_relayed_msg,
             "/GET":   self._show_client_msgs,
             "/PEERS": self._get_peers_info,
+            "/REMOVE": self._remove_peer,
         }[self.cmd]
 
     def _proc_new_msg(self):
@@ -79,6 +80,12 @@ class GossipMessageHandler(StreamRequestHandler):
     def _get_peers_info(self):
         peers_info = [(p.id, f"{p.node_name} ({p.address})") for p in self.server.ss.peers]
         self.wfile.write(bytes(json.dumps(peers_info), "utf-8"))
+
+    def _remove_peer(self):
+        peer_id   = int(self.msg_data)
+        peer_port = str(PORTS_ORIGIN + peer_id)
+        self.server.ss.peers = [p for p in self.server.ss.peers if p.id != peer_id]
+        self.server.ss.peer_addrs = [paddr for paddr in self.server.ss.peer_addrs if peer_port not in paddr]
 
     def _store_and_relay(self, msg_tup):
         if self.msg_id not in self.server.ss.msg_id_set:

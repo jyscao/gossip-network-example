@@ -56,10 +56,16 @@ def main():
 
     elif args["remove-node"]:
         node_number = args["<node-number>"]
+        client = init_gossip_client(node_number)
+        peer_ids = client.get_peers_info(get_ids=True)
+
         pids_map = sp.read_server_pids_to_map()
         node_pid = pids_map.pop(node_number)
         comp_proc = subprocess.run([f"kill {node_pid}"], shell=True)
+
         if comp_proc.returncode == 0:
+            for p in peer_ids:
+                init_gossip_client(p).remove_peer(node_number)
             print(f"Gossip node {node_number} removed")
             sp.write_pids_map_to_file(pids_map)
         else:
@@ -67,7 +73,7 @@ def main():
 
     elif args["list-peers"]:
         client = init_gossip_client(args["<node-number>"])
-        peer_names = client.get_peers_info(get_display_name=True)
+        peer_names = client.get_peers_info(get_names=True)
         print(f"{client} has peers:")
         for pn in peer_names:
             print(f"* {pn}")
