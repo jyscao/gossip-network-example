@@ -49,7 +49,7 @@ class MsgQueueTCPServer(ThreadingTCPServer):
 class GossipMessageHandler(StreamRequestHandler):
 
     def handle(self):
-        self.cmd, self.msg_data = self.rfile.readline().decode().split(":", maxsplit=1)
+        self.cmd, self.msg_data = self.rfile.readline().strip().decode().split(":", maxsplit=1)
         self._get_cmd_handler()()
 
     def _get_cmd_handler(self):

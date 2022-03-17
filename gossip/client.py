@@ -18,23 +18,28 @@ class GossipClient:
 
     def send_message(self, message, is_relay=False):
         """Send a message to the server."""
-
         cmd = "/RELAY" if is_relay else "/NEW"
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            self._send_to_socket(sock, f"{cmd}:{message}")
+        self._send_to_server(f"{cmd}:{message}\n")
 
     def get_messages(self):
         """Fetch a list of all messages stored by the server."""
+        return self._send_to_then_get_from_server("/GET:\n")
+
+    def _send_to_server(self, cmd_data):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            self._send_to_socket(sock, "/GET:\n")
-            msgs_ls = self._recv_server_response(sock)
-        return msgs_ls
+            self._send_to_socket(sock, cmd_data)
+
+    def _send_to_then_get_from_server(self, cmd_data):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            self._send_to_socket(sock, cmd_data)
+            response = self._recv_server_full_response(sock)
+        return response
 
     def _send_to_socket(self, sock, cmd_data):
         sock.connect(self.host_port_tup)
         sock.send(bytes(cmd_data, "utf-8"))
 
-    def _recv_server_response(self, sock):
+    def _recv_server_full_response(self, sock):
         response_ls = []
         while True:
             received = str(sock.recv(1024), "utf-8")
