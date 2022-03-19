@@ -1,12 +1,15 @@
 """Gossip.
 
 Usage:
-  gossip start-network [circular | (random [<degree>])]
+  gossip start-network [circular | (random [<degree>])] [--num-nodes <nn>]
   gossip stop-network
   gossip send-message <node-number> <message>
   gossip get-messages <node-number>
   gossip remove-node <node-number>
   gossip list-peers <node-number>
+
+--Options:
+  -n <nn>, --num-nodes <nn>    Number of nodes to initialize the Gossip Network with [default: 16]
 """
 
 import subprocess
