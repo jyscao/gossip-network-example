@@ -1,7 +1,7 @@
 """Gossip.
 
 Usage:
-  gossip start-network [circular | random]
+  gossip start-network [circular | (random [<degree>])]
   gossip stop-network
   gossip send-message <node-number> <message>
   gossip get-messages <node-number>
@@ -31,7 +31,8 @@ def main():
 
     if args["start-network"]:
         network_type = "circular" if args["circular"] else "random"
-        subprocess.run([f"python3 start-network.py {network_type}"], shell=True)
+        random_k_deg = args["<degree>"] if args["<degree>"] else "NONE"
+        subprocess.run([f"python3 start-network.py {network_type} {random_k_deg}"], shell=True)
 
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
