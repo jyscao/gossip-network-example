@@ -20,18 +20,20 @@ def start_server(network_graph, node_id):
     server = GossipServer(gn_addr(node_id), peer_addrs)
     server.start()
 
-def get_network(network_type, random_k_deg):
+
+def get_network(network_type, num_nodes, random_k_deg=None):
+    if network_type == "random":
+        assert random_k_deg is not None
+        assert num_nodes * random_k_deg % 2 == 0, "(num-nodes × degree) must be an even number for a regular graph"
+
     return {
-        "circular": (CircularNetwork, (NUM_NODES,)),
-        "random":   (RandomKdegNetwork, (NUM_NODES, random_k_deg)),
+        "circular": (CircularNetwork, (num_nodes,)),
+        "random":   (RandomKdegNetwork, (num_nodes, random_k_deg)),
     }[network_type]
 
 
-if __name__ == "__main__":
-    network_type = sys.argv[1]
-    random_k_deg = (int(sys.argv[2]) if sys.argv[2] != "NONE" else 3  # 3 is the default connected degree for random network
-        if network_type == "random" else None)
-    NetworkCls, ncls_args = get_network(network_type, random_k_deg)
+def start_network(network_type, num_nodes, random_k_deg=None):
+    NetworkCls, ncls_args = get_network(network_type, num_nodes, random_k_deg)
     network = NetworkCls(*ncls_args)
 
     pids_map = {}

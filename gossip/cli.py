@@ -1,7 +1,7 @@
 """Gossip.
 
 Usage:
-  gossip start-network [circular | (random [<degree>])] [--num-nodes <nn>]
+  gossip start-network [--num-nodes <nn>] [circular | random [<degree>]]
   gossip stop-network
   gossip send-message <node-number> <message>
   gossip get-messages <node-number>
@@ -10,13 +10,15 @@ Usage:
 
 --Options:
   -n <nn>, --num-nodes <nn>    Number of nodes to initialize the Gossip Network with [default: 16]
+
+  <degree>      The degree of connectedness for each node in a random regular graph [default: 3]
 """
 
 import subprocess
-
 from docopt import docopt
 
 import gossip.server_pids as sp
+from gossip.start_network import start_network
 from gossip.client import GossipClient
 from gossip.constants import *
 
@@ -33,9 +35,10 @@ def main():
     args = docopt(__doc__, version="Gossip 0.1")
 
     if args["start-network"]:
+        num_nodes = int(args["--num-nodes"])
         network_type = "circular" if args["circular"] else "random"
-        random_k_deg = args["<degree>"] if args["<degree>"] else "NONE"
-        subprocess.run([f"python3 start-network.py {network_type} {random_k_deg}"], shell=True)
+        random_k_deg = int(args["<degree>"]) if args["<degree>"] else 3
+        start_network(network_type, num_nodes, random_k_deg)
 
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
