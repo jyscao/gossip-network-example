@@ -1,6 +1,6 @@
 import socket, json
 
-from gossip.constants import *
+from gossip.constants import PORTS_ORIGIN
 
 
 class GossipClient:

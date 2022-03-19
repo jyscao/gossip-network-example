@@ -3,39 +3,39 @@ from dataclasses import dataclass, field
 
 from socketserver import ThreadingTCPServer, StreamRequestHandler
 from gossip.client import GossipClient
-from gossip.constants import *
+from gossip.constants import PORTS_ORIGIN
 
 
 @dataclass
 class ServerSettings:
-    node_id:    int
+    hostname:   str
     port:       int
     peer_addrs: list[str]
+    node_id:    int = None
     peers:      list[GossipClient] = field(init=False)
     msg_box:    list[tuple[str, int, list[int]]] = field(default_factory=list)
     msg_id_set: set[str] = field(default_factory=set)
 
     def __post_init__(self):
+        self.node_id = int(self.port) - PORTS_ORIGIN
         self.peers = [GossipClient(addr) for addr in self.peer_addrs]
 
 
 class GossipServer:
     """A server that participates in a peer-to-peer gossip network."""
 
-    def __init__(self, node_id, port, peer_addrs):
+    def __init__(self, server_address, peer_addrs):
         """Initialize a server with a list of peer addresses.
 
         Peer addresses are in the form HOSTNAME:PORT.
         """
-        self.ss = ServerSettings(node_id, port, peer_addrs)
+        hostname, port = server_address.split(":")
+        self.host_port_tup = (hostname, int(port))
+        self.ss = ServerSettings(hostname, port, peer_addrs)
 
     def start(self):
-        """Starts the server."""
-
         print(f"Starting server {self.ss.node_id} with peers: {self.ss.peers}")
-
-        host_port_tup = (LOCALHOST, self.ss.port)
-        with MsgQueueTCPServer(host_port_tup, GossipMessageHandler, self.ss) as server:
+        with MsgQueueTCPServer(self.host_port_tup, GossipMessageHandler, self.ss) as server:
             server.serve_forever()
 
 

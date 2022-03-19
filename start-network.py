@@ -7,18 +7,17 @@ from gossip.network import CircularNetwork
 from gossip.constants import *
 
 
+gn_addr = lambda n: f"{LOCALHOST}:{PORTS_ORIGIN + n}"
+
 def get_peer_addrs(peer_ids):
-    g_p = lambda p: f"{LOCALHOST}:{PORTS_ORIGIN + p}"
-    return [g_p(p) for p in peer_ids]
+    return [gn_addr(p) for p in peer_ids]
 
 
 def start_server(network_graph, node_id):
-    port = PORTS_ORIGIN + node_id
-
     peer_ids = network_graph.get_peers_for_node(node_id)
     peer_addrs = get_peer_addrs(peer_ids)
 
-    server = GossipServer(node_id, port, peer_addrs)
+    server = GossipServer(gn_addr(node_id), peer_addrs)
     server.start()
 
 
