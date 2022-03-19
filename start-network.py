@@ -3,7 +3,7 @@ import multiprocessing as mp
 
 import gossip.server_pids as sp
 from gossip.server import GossipServer
-from gossip.network import CircularNetwork
+from gossip.network import CircularNetwork, RandomKdegNetwork
 from gossip.constants import *
 
 
@@ -22,7 +22,8 @@ def start_server(network_graph, node_id):
 
 
 if __name__ == "__main__":
-    network = CircularNetwork(NUM_NODES)
+    #  network = CircularNetwork(NUM_NODES)
+    network = RandomKdegNetwork(NUM_NODES, 3)
 
     pids_map = {}
     srv_procs = [mp.Process(target=start_server, args=(network, node_id)) for node_id in network.network.nodes]
