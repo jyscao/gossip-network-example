@@ -24,8 +24,8 @@ def start_server(network_graph, node_id):
 
 if __name__ == "__main__":
     network = CircularNetwork(NUM_NODES)
-    pids_map = {0: os.getpid()}    # "0" will be used to denote this parent Python process
 
+    pids_map = {}
     srv_procs = [mp.Process(target=start_server, args=(network, node_id)) for node_id in network.network.nodes]
     for node_id, proc in enumerate(srv_procs, start=1):
         proc.start()
