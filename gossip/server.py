@@ -69,7 +69,7 @@ class GossipMessageHandler(StreamRequestHandler):
     def _proc_relayed_msg(self):
         msg, timestamp, nodes = json.loads(self.msg_data)
         self.msg_id = f"{msg}_{timestamp}"
-        self.origin_node, self.prev_node = nodes[0], nodes[-1]
+        self.prev_node = nodes[-1]
         nodes.append(self.server.ss.node_id)
         self._store_and_relay((msg, timestamp, nodes))
 
@@ -90,14 +90,10 @@ class GossipMessageHandler(StreamRequestHandler):
     def _store_and_relay(self, msg_tup):
         if self.msg_id not in self.server.ss.msg_id_set:
             self.server.ss.msg_box.append(msg_tup)
-            # TODO: add ability to store all paths taken by relayed message in gossip network
             self.server.ss.msg_id_set.add(self.msg_id)
-
-        if True:
-            # TODO: implement checks to track if the same message has already been relayed to peers currently,
-            # it's not a problem b/c all nodes are circularly-connected, and transmission stops at the origin
-            # node; but transmission stoppage is not guaranteed when nodes are connected as an arbitrary graph
             self._relay_to_peers(msg_tup)
+        # TODO: add ability to store all paths taken by relayed message in gossip network;
+        # this will require storing & relaying message even if it has already been seen
 
     def _relay_to_peers(self, data):
         for p in self._get_peers_to_relay():
@@ -106,13 +102,8 @@ class GossipMessageHandler(StreamRequestHandler):
     def _get_peers_to_relay(self):
         if self.cmd == "/NEW":
             return self.server.ss.peers
-        elif self.cmd == "/RELAY" and self._is_msg_originator():
-            return []
-        elif self.cmd == "/RELAY":  # not self._is_msg_originator() == True
+        elif self.cmd == "/RELAY":
             # filter out the preceeding node which relayed the current message to this node
             return [p for p in self.server.ss.peers if p.id != self.prev_node]
         else:
             raise Exception("this should never be reached!")
-
-    def _is_msg_originator(self):
-        return self.server.ss.node_id == self.origin_node
