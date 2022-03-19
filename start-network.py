@@ -1,4 +1,4 @@
-import os
+import sys
 import multiprocessing as mp
 
 import gossip.server_pids as sp
@@ -20,10 +20,16 @@ def start_server(network_graph, node_id):
     server = GossipServer(gn_addr(node_id), peer_addrs)
     server.start()
 
+def get_network(network_type):
+    return {
+        "circular": (CircularNetwork, (NUM_NODES,)),
+        "random":   (RandomKdegNetwork, (NUM_NODES, 3)),
+    }[network_type]
+
 
 if __name__ == "__main__":
-    #  network = CircularNetwork(NUM_NODES)
-    network = RandomKdegNetwork(NUM_NODES, 3)
+    NetworkCls, ncls_args = get_network(sys.argv[1])
+    network = NetworkCls(*ncls_args)
 
     pids_map = {}
     srv_procs = [mp.Process(target=start_server, args=(network, node_id)) for node_id in network.network.nodes]

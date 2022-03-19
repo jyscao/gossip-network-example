@@ -1,7 +1,7 @@
 """Gossip.
 
 Usage:
-  gossip start-network
+  gossip start-network [circular | random]
   gossip stop-network
   gossip send-message <node-number> <message>
   gossip get-messages <node-number>
@@ -30,7 +30,8 @@ def main():
     args = docopt(__doc__, version="Gossip 0.1")
 
     if args["start-network"]:
-        subprocess.run(["python3 start-network.py"], shell=True)
+        network_type = "circular" if args["circular"] else "random"
+        subprocess.run([f"python3 start-network.py {network_type}"], shell=True)
 
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
