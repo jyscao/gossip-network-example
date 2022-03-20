@@ -32,7 +32,7 @@ class CircularNetwork(GossipNetwork):
         plt.show()
 
 
-class RandomKdegNetwork(GossipNetwork):
+class RandomRegularNetwork(GossipNetwork):
 
     def __init__(self, num_nodes, k_degrees):
         self.k_deg = k_degrees
@@ -45,4 +45,21 @@ class RandomKdegNetwork(GossipNetwork):
 
     def draw_network(self):
         nx.draw_networkx(self.G, with_labels=True, node_color="cyan")
+        plt.show()
+
+
+class PowerlawClusterNetwork(GossipNetwork):
+
+    def __init__(self, num_nodes, m_edges=3, p_triangle=0.5):
+        self.m_edges = m_edges
+        self.p_triangle = p_triangle
+        super().__init__(num_nodes)
+
+    def _get_network_graph(self):
+        G = nx.powerlaw_cluster_graph(self.num_nodes, self.m_edges, self.p_triangle)
+        nx.relabel_nodes(G, {0: self.num_nodes}, copy=False)
+        return G
+
+    def draw_network(self):
+        nx.draw_networkx(self.G, with_labels=True, node_color="pink")
         plt.show()

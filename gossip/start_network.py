@@ -3,7 +3,7 @@ import multiprocessing as mp
 
 import gossip.server_pids as sp
 from gossip.server import GossipServer
-from gossip.network import CircularNetwork, RandomKdegNetwork
+from gossip.network import *
 from gossip.constants import *
 
 
@@ -27,8 +27,9 @@ def get_network(network_type, num_nodes, random_k_deg=None):
         assert num_nodes * random_k_deg % 2 == 0, "(num-nodes × degree) must be an even number for a regular graph"
 
     return {
-        "circular": (CircularNetwork, (num_nodes,)),
-        "random":   (RandomKdegNetwork, (num_nodes, random_k_deg)),
+        "circular": (CircularNetwork,        (num_nodes,)),
+        "random":   (RandomRegularNetwork,   (num_nodes, random_k_deg)),
+        "powerlaw": (PowerlawClusterNetwork, (num_nodes,)),
     }[network_type]
 
 

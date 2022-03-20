@@ -1,7 +1,7 @@
 """Gossip.
 
 Usage:
-  gossip start-network [--num-nodes <nn>] [circular | random [<degree>]]
+  gossip start-network [--num-nodes <nn>] [circular | powerlaw | random [<degree>]]
   gossip stop-network
   gossip send-message <node-number> <message>
   gossip get-messages <node-number>
@@ -30,13 +30,21 @@ def init_gossip_client(node_number):
     node_addr = f"{LOCALHOST}:{get_port(node_number)}"
     return GossipClient(node_addr)
 
+def get_network_type(docopt_args_dict):
+    if docopt_args_dict["circular"]:
+        return "circular"
+    elif docopt_args_dict["powerlaw"]:
+        return "powerlaw"
+    else:
+        return "random"
+
 
 def main():
     args = docopt(__doc__, version="Gossip 0.1")
 
     if args["start-network"]:
         num_nodes = int(args["--num-nodes"])
-        network_type = "circular" if args["circular"] else "random"
+        network_type = get_network_type(args)
         random_k_deg = int(args["<degree>"]) if args["<degree>"] else 3
         start_network(network_type, num_nodes, random_k_deg)
 
