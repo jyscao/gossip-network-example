@@ -1,9 +1,10 @@
 import socket, json, time
 from dataclasses import dataclass, field
+from collections import Counter
 
 from socketserver import ThreadingTCPServer, StreamRequestHandler
 from gossip.client import GossipClient
-from gossip.constants import PORTS_ORIGIN
+from gossip.constants import PORTS_ORIGIN, RELAY_COUNTS
 
 
 @dataclass
@@ -13,8 +14,9 @@ class ServerSettings:
     peer_addrs: list[str]
     node_id:    int = None
     peers:      list[GossipClient] = field(init=False)
-    msg_box:    list[tuple[str, int, list[int]]] = field(default_factory=list)
-    msg_id_set: set[str] = field(default_factory=set)
+    msgs_box:   dict[dict] = field(default_factory=dict)
+    #  msg_box:    list[tuple[str, int, list[int]]] = field(default_factory=list)
+    #  msg_id_set: set[str] = field(default_factory=set)
 
     def __post_init__(self):
         self.node_id = int(self.port) - PORTS_ORIGIN
@@ -54,6 +56,26 @@ class GossipMessageHandler(StreamRequestHandler):
         self.cmd, self.msg_data = self.rfile.readline().strip().decode().split(":", maxsplit=1)
         self._get_cmd_handler()()
 
+    @staticmethod
+    def _parse_msg_id(msg_id: str):
+        if msg_id.count("_") == 1:
+            msg, ts = msg_id.split("_")
+        else:
+            time_rev, msg_rev = msg_id[::-1].split("_", maxsplit=1)     # reversing the ID then splitting at most once on '_' allows message to contain underscores
+            msg, ts = msg_rev[::-1], time_rev[::-1]
+        return msg, int(ts)
+
+    def _init_new_msg_attrs(self, msg_id):
+        message, timestamp = GossipMessageHandler._parse_msg_id(msg_id)
+        return {
+            "message":    message,
+            "timestamp":  timestamp,
+            "in_paths":   [],
+            "in_counts":  Counter({p.id: 0 for p in self.server.ss.peers}),
+            "out_counts": Counter({p.id: 0 for p in self.server.ss.peers}),
+            "is_unread":  True,
+        }
+
     def _get_cmd_handler(self):
         return {
             "/NEW":   self._proc_new_msg,
@@ -66,14 +88,26 @@ class GossipMessageHandler(StreamRequestHandler):
     def _proc_new_msg(self):
         new_msg_timestamp = time.time_ns()
         self.msg_id = f"{self.msg_data}_{new_msg_timestamp}"
-        self._store_and_relay((self.msg_data, new_msg_timestamp, [self.server.ss.node_id]))
+        self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs(self.msg_id)
+        self.node_path = [self.server.ss.node_id]
+        self._save_path_and_relay()
 
     def _proc_relayed_msg(self):
-        msg, timestamp, nodes = json.loads(self.msg_data)
-        self.msg_id = f"{msg}_{timestamp}"
-        self.prev_node = nodes[-1]
-        nodes.append(self.server.ss.node_id)
-        self._store_and_relay((msg, timestamp, nodes))
+        self.msg_id, self.node_path = json.loads(self.msg_data)
+        pn = self.prev_node = self.node_path[-1]
+
+        if self.msg_id in self.server.ss.msgs_box:
+            self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id]
+        else:
+            self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs(self.msg_id)
+
+        self.curr_msg_attrs["in_counts"][pn] += 1
+        within_receive_limit = self.curr_msg_attrs["in_counts"][pn] <= RELAY_COUNTS
+        is_first_reception   = self.msg_id not in self.server.ss.msgs_box
+
+        if within_receive_limit or is_first_reception:
+            self.node_path.append(self.server.ss.node_id)
+            self._save_path_and_relay()
 
     def _show_client_msgs(self):
         msgs_list = [f"{msg} ({' ➜ '.join(str(n) for n in nodes)})" for msg, _, nodes in self.server.ss.msg_box]
@@ -89,17 +123,15 @@ class GossipMessageHandler(StreamRequestHandler):
         self.server.ss.peers = [p for p in self.server.ss.peers if p.id != peer_id]
         self.server.ss.peer_addrs = [paddr for paddr in self.server.ss.peer_addrs if peer_port not in paddr]
 
-    def _store_and_relay(self, msg_tup):
-        if self.msg_id not in self.server.ss.msg_id_set:
-            self.server.ss.msg_box.append(msg_tup)
-            self.server.ss.msg_id_set.add(self.msg_id)
-            self._relay_to_peers(msg_tup)
-        # TODO: add ability to store all paths taken by relayed message in gossip network;
-        # this will require storing & relaying message even if it has already been seen
+    def _save_path_and_relay(self):
+        self.curr_msg_attrs["in_paths"].append(self.node_path)
+        self._relay_to_peers((self.msg_id, self.node_path))
 
     def _relay_to_peers(self, data):
         for p in self._get_peers_to_relay():
-            p.send_message(json.dumps(data), is_relay=True)
+            if self.curr_msg_attrs["out_counts"][p.id] < RELAY_COUNTS:
+                p.send_message(json.dumps(data), is_relay=True)
+                self.curr_msg_attrs["out_counts"][p.id] += 1
 
     def _get_peers_to_relay(self):
         if self.cmd == "/NEW":
