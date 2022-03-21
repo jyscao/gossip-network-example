@@ -1,7 +1,7 @@
 """Gossip.
 
 Usage:
-  gossip start-network [--num-nodes <nn>] [circular | powerlaw | random [<degree>]]
+  gossip start-network [--num-nodes <nn>] [circular | powerlaw | random [<degree>]] [--plot]
   gossip stop-network
   gossip send-message <node-number> <message>
   gossip get-messages <node-number>
@@ -10,6 +10,7 @@ Usage:
 
 --Options:
   -n <nn>, --num-nodes <nn>    Number of nodes to initialize the Gossip Network with [default: 16]
+  -p, --plot                   Plot the network graph on start-network (requires matplotlib)
 
   <degree>      The degree of connectedness for each node in a random regular graph [default: 3]
 """
@@ -46,7 +47,7 @@ def main():
         num_nodes = int(args["--num-nodes"])
         network_type = get_network_type(args)
         random_k_deg = int(args["<degree>"]) if args["<degree>"] else 3
-        start_network(network_type, num_nodes, random_k_deg)
+        start_network(network_type, num_nodes, random_k_deg, args["--plot"])
 
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
