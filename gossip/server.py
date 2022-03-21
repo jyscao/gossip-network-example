@@ -54,14 +54,6 @@ class GossipMessageHandler(StreamRequestHandler):
         self.cmd, self.msg_data = self.rfile.readline().strip().decode().split(":", maxsplit=1)
         self._get_cmd_handler()()
 
-    def _init_new_msg_attrs(self, msg_id):
-        return {
-            "in_paths":   [],
-            "in_counts":  Counter({p.id: 0 for p in self.server.ss.peers}),
-            "out_counts": Counter({p.id: 0 for p in self.server.ss.peers}),
-            "is_unread":  True,
-        }
-
     def _get_cmd_handler(self):
         return {
             "/NEW":   self._proc_new_msg,
@@ -110,6 +102,14 @@ class GossipMessageHandler(StreamRequestHandler):
         peer_port = str(PORTS_ORIGIN + peer_id)
         self.server.ss.peers = [p for p in self.server.ss.peers if p.id != peer_id]
         self.server.ss.peer_addrs = [paddr for paddr in self.server.ss.peer_addrs if peer_port not in paddr]
+
+    def _init_new_msg_attrs(self, msg_id):
+        return {
+            "in_paths":   [],
+            "in_counts":  Counter({p.id: 0 for p in self.server.ss.peers}),
+            "out_counts": Counter({p.id: 0 for p in self.server.ss.peers}),
+            "is_unread":  True,
+        }
 
     def _save_path_and_relay(self):
         self.curr_msg_attrs["in_paths"].append(self.node_path)
