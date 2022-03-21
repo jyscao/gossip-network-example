@@ -35,11 +35,11 @@ class GossipServer:
 
     def start(self):
         print(f"Starting server {self.ss.node_id} with peers: {self.ss.peers}")
-        with MsgQueueTCPServer(self.host_port_tup, GossipMessageHandler, self.ss) as server:
+        with GossipTCPServer(self.host_port_tup, GossipMessageHandler, self.ss) as server:
             server.serve_forever()
 
 
-class MsgQueueTCPServer(ThreadingTCPServer):
+class GossipTCPServer(ThreadingTCPServer):
 
     def __init__(self, host_port_tup, request_handler, server_settings):
         super().__init__(host_port_tup, request_handler)
@@ -47,6 +47,8 @@ class MsgQueueTCPServer(ThreadingTCPServer):
 
 
 class GossipMessageHandler(StreamRequestHandler):
+
+    # TODO: make appropriate properties private, e.g. self._msg_id
 
     def handle(self):
         self.cmd, self.msg_data = self.rfile.readline().strip().decode().split(":", maxsplit=1)
