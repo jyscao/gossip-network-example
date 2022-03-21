@@ -66,10 +66,13 @@ def main():
 
     elif args["get-messages"]:
         client = init_gossip_client(args["<node-number>"])
-        messages = client.get_messages()
+        msgs_data = client.get_messages()
         print(f"Fetched messages from {client}")
-        for msg in messages:
-            print(f"- {msg}")
+        for (msg, _), msg_paths in msgs_data.items():
+            print()
+            print(f"• {msg}")
+            for mp in msg_paths:
+                print(f"  ↳ {mp}")
 
     elif args["remove-node"]:
         node_number = args["<node-number>"]

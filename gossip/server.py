@@ -15,8 +15,6 @@ class ServerSettings:
     node_id:    int = None
     peers:      list[GossipClient] = field(init=False)
     msgs_box:   dict[dict] = field(default_factory=dict)
-    #  msg_box:    list[tuple[str, int, list[int]]] = field(default_factory=list)
-    #  msg_id_set: set[str] = field(default_factory=set)
 
     def __post_init__(self):
         self.node_id = int(self.port) - PORTS_ORIGIN
@@ -56,20 +54,8 @@ class GossipMessageHandler(StreamRequestHandler):
         self.cmd, self.msg_data = self.rfile.readline().strip().decode().split(":", maxsplit=1)
         self._get_cmd_handler()()
 
-    @staticmethod
-    def _parse_msg_id(msg_id: str):
-        if msg_id.count("_") == 1:
-            msg, ts = msg_id.split("_")
-        else:
-            time_rev, msg_rev = msg_id[::-1].split("_", maxsplit=1)     # reversing the ID then splitting at most once on '_' allows message to contain underscores
-            msg, ts = msg_rev[::-1], time_rev[::-1]
-        return msg, int(ts)
-
     def _init_new_msg_attrs(self, msg_id):
-        message, timestamp = GossipMessageHandler._parse_msg_id(msg_id)
         return {
-            "message":    message,
-            "timestamp":  timestamp,
             "in_paths":   [],
             "in_counts":  Counter({p.id: 0 for p in self.server.ss.peers}),
             "out_counts": Counter({p.id: 0 for p in self.server.ss.peers}),
@@ -80,7 +66,7 @@ class GossipMessageHandler(StreamRequestHandler):
         return {
             "/NEW":   self._proc_new_msg,
             "/RELAY": self._proc_relayed_msg,
-            "/GET":   self._show_client_msgs,
+            "/GET":   self._send_client_msgs_data,
             "/PEERS": self._get_peers_info,
             "/REMOVE": self._remove_peer,
         }[self.cmd]
@@ -109,9 +95,11 @@ class GossipMessageHandler(StreamRequestHandler):
             self.node_path.append(self.server.ss.node_id)
             self._save_path_and_relay()
 
-    def _show_client_msgs(self):
-        msgs_list = [f"{msg} ({' ➜ '.join(str(n) for n in nodes)})" for msg, _, nodes in self.server.ss.msg_box]
-        self.wfile.write(bytes(json.dumps(msgs_list), "utf-8"))
+    def _send_client_msgs_data(self):
+        msgs_data = {msg_id: msg_attrs["in_paths"] for msg_id, msg_attrs in self.server.ss.msgs_box.items()}
+        self.wfile.write(bytes(json.dumps(msgs_data), "utf-8"))
+        for msg_attrs in self.server.ss.msgs_box.values():
+            msg_attrs["is_unread"] = False
 
     def _get_peers_info(self):
         peers_info = [(p.id, f"{p.node_name} ({p.address})") for p in self.server.ss.peers]

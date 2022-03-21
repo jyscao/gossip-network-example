@@ -21,9 +21,20 @@ class GossipClient:
         cmd = "/RELAY" if is_relay else "/NEW"
         self._send_to_server(f"{cmd}:{message}\n")
 
+    @staticmethod
+    def _parse_msg_id(msg_id: str):
+        if msg_id.count("_") == 1:
+            msg, ts = msg_id.split("_")
+        else:
+            time_rev, msg_rev = msg_id[::-1].split("_", maxsplit=1)     # reversing the ID then splitting at most once on '_' allows message to contain underscores
+            msg, ts = msg_rev[::-1], time_rev[::-1]
+        return msg, int(ts)
+
     def get_messages(self):
         """Fetch a list of all messages stored by the server."""
-        return self._send_to_then_get_from_server("/GET:\n")
+        msgs_data = self._send_to_then_get_from_server("/GET:\n")
+        return {GossipClient._parse_msg_id(msg_id): [' ➜ '.join(str(n) for n in nodes) for nodes in msg_paths]
+            for msg_id, msg_paths in msgs_data.items()}
 
     def get_peers_info(self, get_ids=False, get_names=False):
         """Fetch a list of all peers connected to the server."""
