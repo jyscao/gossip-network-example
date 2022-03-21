@@ -34,7 +34,7 @@ def get_network(network_type, num_nodes, random_k_deg=None):
 
 
 def plot_network(network, pids_map):    # plt.show() in separate process as to not block servers
-    plt_proc = mp.Process(target=network.draw_network, args=())
+    plt_proc = mp.Process(target=network.show_graph, args=())
     plt_proc.start()
     pids_map["plot"] = plt_proc.pid
     return plt_proc

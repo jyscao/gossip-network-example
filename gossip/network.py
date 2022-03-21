@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import networkx as nx
-import matplotlib.pyplot as plt
 
 
 class GossipNetwork(ABC):
@@ -18,8 +17,13 @@ class GossipNetwork(ABC):
         return self.G[node_id]
 
     @abstractmethod
-    def draw_network(self):
+    def _draw_network(self):
         pass
+
+    def show_graph(self):
+        import matplotlib.pyplot as plt
+        self._draw_network()
+        plt.show()
 
 
 class CircularNetwork(GossipNetwork):
@@ -27,9 +31,8 @@ class CircularNetwork(GossipNetwork):
     def _get_network_graph(self):
         return nx.cycle_graph(self.nodes_ls)
 
-    def draw_network(self):
+    def _draw_network(self):
         nx.draw_circular(self.G, with_labels=True, node_color="yellow")
-        plt.show()
 
 
 class RandomRegularNetwork(GossipNetwork):
@@ -43,9 +46,8 @@ class RandomRegularNetwork(GossipNetwork):
         nx.relabel_nodes(G, {0: self.num_nodes}, copy=False)
         return G
 
-    def draw_network(self):
+    def _draw_network(self):
         nx.draw_networkx(self.G, with_labels=True, node_color="cyan")
-        plt.show()
 
 
 class PowerlawClusterNetwork(GossipNetwork):
@@ -60,6 +62,5 @@ class PowerlawClusterNetwork(GossipNetwork):
         nx.relabel_nodes(G, {0: self.num_nodes}, copy=False)
         return G
 
-    def draw_network(self):
+    def _draw_network(self):
         nx.draw_networkx(self.G, with_labels=True, node_color="pink")
-        plt.show()
