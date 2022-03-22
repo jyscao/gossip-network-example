@@ -54,7 +54,7 @@ def get_msgs_status_type(docopt_args_dict):
 
 def get_msgs_paths_type(docopt_args_dict):
     if docopt_args_dict["-P"] == 3:
-        return "both"
+        return "shortest & longest"
     elif docopt_args_dict["-P"] == 2:
         return "longest"
     elif docopt_args_dict["-P"] == 1:
@@ -110,7 +110,7 @@ def main():
         client = init_gossip_client(args["<node-number>"])
         msgs_status_type, msgs_paths_type = get_msgs_status_type(args), get_msgs_paths_type(args)
         msgs_data = client.get_messages(msgs_status_type, msgs_paths_type)
-        print(f"Fetched {msgs_status_type} messages from {client}")
+        print(f"Fetched {msgs_status_type} messages from {client}; showing {msgs_paths_type} path(s):")
         for msg_ts_tup, msg_paths in msgs_data.items():
             print()
             print(f"• {format_msg_w_time(args, msg_ts_tup)}")

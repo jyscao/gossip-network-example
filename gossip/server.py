@@ -147,19 +147,17 @@ class GossipMessageHandler(StreamRequestHandler):
 
     @staticmethod
     def _filter_in_paths(in_paths_ls, paths_type):
-        assert paths_type in {"both", "longest", "shortest", "all"}
+        assert paths_type in {"shortest & longest", "longest", "shortest", "all"}
 
         if paths_type == "all":
             return in_paths_ls
 
-        max_hops = max(len(ps) for ps in in_paths_ls) if paths_type in {"both", "longest"} else None
-        min_hops = min(len(ps) for ps in in_paths_ls) if paths_type in {"both", "shortest"} else None
+        filtered_paths_ls = []
+        if "shortest" in paths_type:
+            min_hops = min(len(ps) for ps in in_paths_ls)
+            filtered_paths_ls += [pl for pl in in_paths_ls if len(pl) == min_hops]
+        if "longest" in paths_type:
+            max_hops = max(len(ps) for ps in in_paths_ls)
+            filtered_paths_ls += [pl for pl in in_paths_ls if len(pl) == max_hops]
 
-        if paths_type == "both":
-            return [pl for pl in in_paths_ls if len(pl) in {max_hops, min_hops}]
-        elif paths_type == "longest":
-            return [pl for pl in in_paths_ls if len(pl) == max_hops]
-        elif paths_type == "shortest":
-            return [pl for pl in in_paths_ls if len(pl) == min_hops]
-        else:
-            raise Exception("this should never be reached!")
+        return filtered_paths_ls
