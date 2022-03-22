@@ -4,16 +4,20 @@ Usage:
   gossip start-network [circular | powerlaw | random [<degree>]] [-n <nn>] [-p]
   gossip stop-network
   gossip send-message <node-number> <message>
-  gossip get-messages <node-number> [unread | read | all] [-t...]
+  gossip get-messages <node-number> [unread | read | all] [[-P] [-PP] | [-A]] [-t...]
   gossip remove-node <node-number>
   gossip list-peers <node-number>
 
 --Options:
+  <degree>                     The degree of connectedness for each node in a random regular graph [default: 3]
+
   -n <nn>, --num-nodes <nn>    Number of nodes to initialize the Gossip Network with [default: 16]
   -p, --plot                   Plot the network graph on start-network (requires matplotlib)
-  -t, --time                   Display the times when each message was received by the network
 
-  <degree>      The degree of connectedness for each node in a random regular graph [default: 3]
+  -P                           Display the shortest path(s) taken by message to reach node (can be combined w/ -PP)
+  -PP                          Display the longest path(s) taken by message to reach node (can be combined w/ -P)
+  -A, --all-paths              Display all paths taken by message to reach node
+  -t, --time                   Display the times when each message was received by the network (repeat for more time info)
 """
 
 import subprocess, time
@@ -45,6 +49,16 @@ def get_msgs_status_type(docopt_args_dict):
         return "unread"
     elif docopt_args_dict["read"]:
         return "read"
+    else:
+        return "all"
+
+def get_msgs_paths_type(docopt_args_dict):
+    if docopt_args_dict["--paths"] == 3:
+        return "both"
+    elif docopt_args_dict["--paths"] == 2:
+        return "longest"
+    elif docopt_args_dict["--paths"] == 1:
+        return "shortest"
     else:
         return "all"
 
@@ -94,8 +108,8 @@ def main():
 
     elif args["get-messages"]:
         client = init_gossip_client(args["<node-number>"])
-        msgs_status_type = get_msgs_status_type(args)
-        msgs_data = client.get_messages(msgs_status_type)
+        msgs_status_type, msgs_paths_type = get_msgs_status_type(args), get_msgs_paths_type(args)
+        msgs_data = client.get_messages(msgs_status_type, msgs_paths_type)
         print(f"Fetched {msgs_status_type} messages from {client}")
         for msg_ts_tup, msg_paths in msgs_data.items():
             print()
