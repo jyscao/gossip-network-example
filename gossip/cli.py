@@ -1,22 +1,22 @@
 """Gossip.
 
 Usage:
-  gossip start-network [circular | powerlaw | random [<degree>]] [-n <nn>] [-p]
+  gossip start-network [circular | powerlaw | random [<degree>]] [-n <nn>] [-P]
   gossip stop-network
   gossip send-message <node-number> <message> [-r <count>]
-  gossip get-messages <node-number> [unread | read | all] [[-P] [-PP] | [-A]] [-t...]
+  gossip get-messages <node-number> [unread | read | all] [[-p] [-pp] | [-A]] [-t...]
   gossip remove-node <node-number>
   gossip list-peers <node-number>
 
 --Options:
   <degree>                      The degree of connectedness for each node in a random regular graph [default: 3]
   -n <nn>, --num-nodes <nn>     Number of nodes to initialize the Gossip Network with [default: 16]
-  -p, --plot                    Plot the network graph on start-network (requires matplotlib)
+  -P, --plot                    Plot the network graph on start-network (requires matplotlib)
 
   -r <limit>, --relays <limit>  Number of times each server node relays the sent message to its peers [default: 1]
 
-  -P                            Display the SHORTEST path(s) taken by message to reach node (can be combined w/ -PP)
-  -PP                           Display the LONGEST path(s) taken by message to reach node (can be combined w/ -P)
+  -p                            Display the SHORTEST path(s) taken by message to reach node (can be combined w/ -pp)
+  -pp                           Display the LONGEST path(s) taken by message to reach node (can be combined w/ -p)
   -A, --all-paths               Display ALL paths taken by message to reach node
   -t, --time                    Display the times when each message was received by the network (repeat for more time info)
 """
@@ -54,11 +54,11 @@ def get_msgs_status_type(docopt_args_dict):
         return "all"
 
 def get_msgs_paths_type(docopt_args_dict):
-    if docopt_args_dict["-P"] == 3:
+    if docopt_args_dict["-p"] == 3:
         return "shortest & longest"
-    elif docopt_args_dict["-P"] == 2:
+    elif docopt_args_dict["-p"] == 2:
         return "longest"
-    elif docopt_args_dict["-P"] == 1:
+    elif docopt_args_dict["-p"] == 1:
         return "shortest"
     else:
         return "all"
