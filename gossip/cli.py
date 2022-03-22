@@ -4,7 +4,7 @@ Usage:
   gossip start-network [circular | powerlaw | random [<degree>]] [-n <nn>] [-p]
   gossip stop-network
   gossip send-message <node-number> <message>
-  gossip get-messages <node-number> [-t] [-v]
+  gossip get-messages <node-number> [-t...]
   gossip remove-node <node-number>
   gossip list-peers <node-number>
 
@@ -12,7 +12,6 @@ Usage:
   -n <nn>, --num-nodes <nn>    Number of nodes to initialize the Gossip Network with [default: 16]
   -p, --plot                   Plot the network graph on start-network (requires matplotlib)
   -t, --time                   Display the times when each message was received by the network
-  -v, --verbose                Show more detailed output(s)
 
   <degree>      The degree of connectedness for each node in a random regular graph [default: 3]
 """
@@ -43,14 +42,22 @@ def get_network_type(docopt_args_dict):
 
 def format_msg_w_time(docopt_args_dict, msg_ts_tup):
     msg, ts_ns = msg_ts_tup
-    if docopt_args_dict["--time"] and docopt_args_dict["--verbose"]:
-        timestamp = time.strftime("%b %d, %Y - %H:%M:%S (UTC%z)", time.localtime(int(ts_ns) // 1e9))
+    # TODO: refactor this using structural pattern matching
+    if docopt_args_dict["--time"] >= 3:
+        time_display_format = "%b %d, %Y - %H:%M:%S (UTC%z)"
+        timestamp = time.strftime(time_display_format, time.localtime(int(ts_ns) // 1e9))
         return f"{timestamp}: {msg}"
-    elif docopt_args_dict["--time"]:
+    elif docopt_args_dict["--time"] == 2:
+        time_display_format = "%H:%M:%S - %d/%m/%Y"
+        timestamp = time.strftime(time_display_format, time.localtime(int(ts_ns) // 1e9))
+        return f"{msg} [{timestamp}]"
+    elif docopt_args_dict["--time"] == 1:
         timestamp = time.strftime("%H:%M:%S", time.localtime(int(ts_ns) // 1e9))
         return f"{msg} [{timestamp}]"
-    else:
+    elif docopt_args_dict["--time"] == 0:
         return msg
+    else:
+        raise Exception("this should never be reached!")
 
 
 def main():
