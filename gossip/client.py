@@ -17,7 +17,7 @@ class GossipClient:
         return self.node_name
 
     def send_message(self, message, is_relay=False):
-        """Send a message to the server."""
+        """Send a message to the current server."""
         cmd = "/RELAY" if is_relay else "/NEW"
         self._send_to_server(f"{cmd}:{message}")
 
@@ -31,13 +31,13 @@ class GossipClient:
         return msg, int(ts)
 
     def get_messages(self, msgs_status_type):
-        """Fetch a list of all messages stored by the server."""
+        """Fetch a list of all messages stored by the current server."""
         msgs_data = self._send_to_then_get_from_server(f"/GET:{msgs_status_type}\n")
         return {GossipClient._parse_msg_id(msg_id): [' ➜ '.join(str(n) for n in nodes) for nodes in msg_paths]
             for msg_id, msg_paths in msgs_data.items()}
 
     def get_peers_info(self, get_ids=False, get_names=False):
-        """Fetch a list of all peers connected to the server."""
+        """Fetch the list of peers connected to the current server."""
         peer_ids, peer_names = zip(*self._send_to_then_get_from_server("/PEERS:\n"))
 
         if get_ids and get_names:
@@ -49,8 +49,9 @@ class GossipClient:
         else:
             raise Exception("must fetch either peer IDs or peer names")
 
-    def remove_peer(self, peer_id):
-        self._send_to_server(f"/REMOVE:{peer_id}\n")
+    def remove_peer(self, node_id):
+        """Remove the given node as a peer from the current server."""
+        self._send_to_server(f"/REMOVE:{node_id}\n")
 
     def _send_to_server(self, cmd_data):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
