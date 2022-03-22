@@ -3,21 +3,22 @@
 Usage:
   gossip start-network [circular | powerlaw | random [<degree>]] [-n <nn>] [-p]
   gossip stop-network
-  gossip send-message <node-number> <message>
+  gossip send-message <node-number> <message> [-r <count>]
   gossip get-messages <node-number> [unread | read | all] [[-P] [-PP] | [-A]] [-t...]
   gossip remove-node <node-number>
   gossip list-peers <node-number>
 
 --Options:
-  <degree>                     The degree of connectedness for each node in a random regular graph [default: 3]
+  <degree>                      The degree of connectedness for each node in a random regular graph [default: 3]
+  -n <nn>, --num-nodes <nn>     Number of nodes to initialize the Gossip Network with [default: 16]
+  -p, --plot                    Plot the network graph on start-network (requires matplotlib)
 
-  -n <nn>, --num-nodes <nn>    Number of nodes to initialize the Gossip Network with [default: 16]
-  -p, --plot                   Plot the network graph on start-network (requires matplotlib)
+  -r <limit>, --relays <limit>  Number of times each server node relays the sent message to its peers [default: 1]
 
-  -P                           Display the SHORTEST path(s) taken by message to reach node (can be combined w/ -PP)
-  -PP                          Display the LONGEST path(s) taken by message to reach node (can be combined w/ -P)
-  -A, --all-paths              Display ALL paths taken by message to reach node
-  -t, --time                   Display the times when each message was received by the network (repeat for more time info)
+  -P                            Display the SHORTEST path(s) taken by message to reach node (can be combined w/ -PP)
+  -PP                           Display the LONGEST path(s) taken by message to reach node (can be combined w/ -P)
+  -A, --all-paths               Display ALL paths taken by message to reach node
+  -t, --time                    Display the times when each message was received by the network (repeat for more time info)
 """
 
 import subprocess, time
@@ -103,7 +104,7 @@ def main():
     elif args["send-message"]:
         message = args["<message>"]
         client = init_gossip_client(args["<node-number>"])
-        client.send_message(message)
+        client.send_message(message, relay_limit=int(args["--relays"]))
         print(f"Message sent to {client}")
 
     elif args["get-messages"]:

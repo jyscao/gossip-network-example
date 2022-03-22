@@ -16,7 +16,7 @@ class GossipClient:
     def __repr__(self):
         return self.node_name
 
-    def send_message(self, message, is_relay=False):
+    def send_message(self, message, is_relay=False, relay_limit=1):
         """Send a message to the current server."""
         cmd = "/RELAY" if is_relay else "/NEW"
         self._send_to_server(f"{cmd}:{message}")
