@@ -91,13 +91,14 @@ class GossipMessageHandler(StreamRequestHandler):
         status_type, paths_type = self.msg_data.split("|")
 
         # TODO: refactor below using structural pattern matching
+        assert status_type in {"unread", "read", "all"}
         status_type_filter = {
             "unread": (True,),
             "read":   (False,),
             "all":    (True, False),
         }[status_type]
 
-        msgs_data = {msg_id: msg_attrs["in_paths"] for msg_id, msg_attrs
+        msgs_data = {msg_id: GossipMessageHandler._filter_in_paths(msg_attrs["in_paths"], paths_type) for msg_id, msg_attrs
             in self.server.ss.msgs_box.items() if msg_attrs["is_unread"] in status_type_filter}
         self.wfile.write(bytes(json.dumps(msgs_data), "utf-8"))
         self._mark_msgs_as_read_on_get(status_type)
@@ -140,6 +141,25 @@ class GossipMessageHandler(StreamRequestHandler):
             raise Exception("this should never be reached!")
 
     def _mark_msgs_as_read_on_get(self, status_type):
-        if status_type in ("unread", "all"):
+        if status_type in {"unread", "all"}:
             for msg_attrs in self.server.ss.msgs_box.values():
                 msg_attrs["is_unread"] = False
+
+    @staticmethod
+    def _filter_in_paths(in_paths_ls, paths_type):
+        assert paths_type in {"both", "longest", "shortest", "all"}
+
+        if paths_type == "all":
+            return in_paths_ls
+
+        max_hops = max(len(ps) for ps in in_paths_ls) if paths_type in {"both", "longest"} else None
+        min_hops = min(len(ps) for ps in in_paths_ls) if paths_type in {"both", "shortest"} else None
+
+        if paths_type == "both":
+            return [pl for pl in in_paths_ls if len(pl) in {max_hops, min_hops}]
+        elif paths_type == "longest":
+            return [pl for pl in in_paths_ls if len(pl) == max_hops]
+        elif paths_type == "shortest":
+            return [pl for pl in in_paths_ls if len(pl) == min_hops]
+        else:
+            raise Exception("this should never be reached!")

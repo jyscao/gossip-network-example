@@ -14,9 +14,9 @@ Usage:
   -n <nn>, --num-nodes <nn>    Number of nodes to initialize the Gossip Network with [default: 16]
   -p, --plot                   Plot the network graph on start-network (requires matplotlib)
 
-  -P                           Display the shortest path(s) taken by message to reach node (can be combined w/ -PP)
-  -PP                          Display the longest path(s) taken by message to reach node (can be combined w/ -P)
-  -A, --all-paths              Display all paths taken by message to reach node
+  -P                           Display the SHORTEST path(s) taken by message to reach node (can be combined w/ -PP)
+  -PP                          Display the LONGEST path(s) taken by message to reach node (can be combined w/ -P)
+  -A, --all-paths              Display ALL paths taken by message to reach node
   -t, --time                   Display the times when each message was received by the network (repeat for more time info)
 """
 
@@ -53,11 +53,11 @@ def get_msgs_status_type(docopt_args_dict):
         return "all"
 
 def get_msgs_paths_type(docopt_args_dict):
-    if docopt_args_dict["--paths"] == 3:
+    if docopt_args_dict["-P"] == 3:
         return "both"
-    elif docopt_args_dict["--paths"] == 2:
+    elif docopt_args_dict["-P"] == 2:
         return "longest"
-    elif docopt_args_dict["--paths"] == 1:
+    elif docopt_args_dict["-P"] == 1:
         return "shortest"
     else:
         return "all"
