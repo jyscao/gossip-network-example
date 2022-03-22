@@ -30,9 +30,9 @@ class GossipClient:
             msg, ts = msg_rev[::-1], time_rev[::-1]
         return msg, int(ts)
 
-    def get_messages(self):
+    def get_messages(self, msgs_status_type):
         """Fetch a list of all messages stored by the server."""
-        msgs_data = self._send_to_then_get_from_server("/GET:\n")
+        msgs_data = self._send_to_then_get_from_server(f"/GET:{msgs_status_type}\n")
         return {GossipClient._parse_msg_id(msg_id): [' ➜ '.join(str(n) for n in nodes) for nodes in msg_paths]
             for msg_id, msg_paths in msgs_data.items()}
 

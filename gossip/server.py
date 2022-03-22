@@ -88,10 +88,21 @@ class GossipMessageHandler(StreamRequestHandler):
             self._save_path_and_relay()
 
     def _send_client_msgs_data(self):
-        msgs_data = {msg_id: msg_attrs["in_paths"] for msg_id, msg_attrs in self.server.ss.msgs_box.items()}
+        # TODO: refactor below using structural pattern matching
+        type_filter = {
+            "unread": (True,),
+            "read":   (False,),
+            "all":    (True, False),
+        }[self.msg_data]
+
+        msgs_data = {msg_id: msg_attrs["in_paths"] for msg_id, msg_attrs
+            in self.server.ss.msgs_box.items() if msg_attrs["is_unread"] in type_filter}
         self.wfile.write(bytes(json.dumps(msgs_data), "utf-8"))
-        for msg_attrs in self.server.ss.msgs_box.values():
-            msg_attrs["is_unread"] = False
+
+        # mark existing unread messages as read
+        if self.msg_data in ("unread", "all"):
+            for msg_attrs in self.server.ss.msgs_box.values():
+                msg_attrs["is_unread"] = False
 
     def _get_peers_info(self):
         peers_info = [(p.id, f"{p.node_name} ({p.address})") for p in self.server.ss.peers]

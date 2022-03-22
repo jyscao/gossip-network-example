@@ -4,7 +4,7 @@ Usage:
   gossip start-network [circular | powerlaw | random [<degree>]] [-n <nn>] [-p]
   gossip stop-network
   gossip send-message <node-number> <message>
-  gossip get-messages <node-number> [-t...]
+  gossip get-messages <node-number> [unread | read | all] [-t...]
   gossip remove-node <node-number>
   gossip list-peers <node-number>
 
@@ -39,6 +39,14 @@ def get_network_type(docopt_args_dict):
         return "powerlaw"
     else:
         return "random"
+
+def get_msgs_status_type(docopt_args_dict):
+    if docopt_args_dict["unread"]:
+        return "unread"
+    elif docopt_args_dict["read"]:
+        return "read"
+    else:
+        return "all"
 
 def format_msg_w_time(docopt_args_dict, msg_ts_tup):
     msg, ts_ns = msg_ts_tup
@@ -86,8 +94,9 @@ def main():
 
     elif args["get-messages"]:
         client = init_gossip_client(args["<node-number>"])
-        msgs_data = client.get_messages()
-        print(f"Fetched messages from {client}")
+        msgs_status_type = get_msgs_status_type(args)
+        msgs_data = client.get_messages(msgs_status_type)
+        print(f"Fetched {msgs_status_type} messages from {client}")
         for msg_ts_tup, msg_paths in msgs_data.items():
             print()
             print(f"• {format_msg_w_time(args, msg_ts_tup)}")
