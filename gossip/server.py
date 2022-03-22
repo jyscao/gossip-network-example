@@ -34,7 +34,7 @@ class GossipServer:
         self.ss = ServerSettings(hostname, port, peer_addrs)
 
     def start(self):
-        print(f"Starting server {self.ss.node_id} with peers: {self.ss.peers}")
+        print(f"Starting Gossip-Node-{self.ss.node_id} with peers:".ljust(36) + f" {', '.join(str(p.id) for p in self.ss.peers)}")
         with GossipTCPServer(self.host_port_tup, GossipMessageHandler, self.ss) as server:
             server.serve_forever()
 
