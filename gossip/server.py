@@ -4,7 +4,7 @@ from collections import Counter
 
 from socketserver import ThreadingTCPServer, StreamRequestHandler
 from gossip.client import GossipClient
-from gossip.constants import PORTS_ORIGIN, RELAY_COUNTS
+from gossip.constants import PORTS_ORIGIN
 
 
 @dataclass
@@ -64,14 +64,16 @@ class GossipMessageHandler(StreamRequestHandler):
         }[self.cmd]
 
     def _proc_new_msg(self):
+        self._set_relay_limit_and_msg_text_on_send()
         new_msg_timestamp = time.time_ns()
-        self.msg_id = f"{self.msg_data}_{new_msg_timestamp}"
+        self.msg_id = f"{self.msg_content}_{new_msg_timestamp}"
         self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs(self.msg_id)
         self.node_path = [self.server.ss.node_id]
         self._save_path_and_relay()
 
     def _proc_relayed_msg(self):
-        self.msg_id, self.node_path = json.loads(self.msg_data)
+        self._set_relay_limit_and_msg_text_on_send()
+        self.msg_id, self.node_path = json.loads(self.msg_content)
         pn = self.prev_node = self.node_path[-1]
 
         if self.msg_id in self.server.ss.msgs_box:
@@ -80,7 +82,7 @@ class GossipMessageHandler(StreamRequestHandler):
             self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs(self.msg_id)
 
         self.curr_msg_attrs["in_counts"][pn] += 1
-        within_receive_limit = self.curr_msg_attrs["in_counts"][pn] <= RELAY_COUNTS
+        within_receive_limit = self.curr_msg_attrs["in_counts"][pn] <= self.relay_limit
         is_first_reception   = self.msg_id not in self.server.ss.msgs_box
 
         if within_receive_limit or is_first_reception:
@@ -113,6 +115,10 @@ class GossipMessageHandler(StreamRequestHandler):
         self.server.ss.peers = [p for p in self.server.ss.peers if p.id != peer_id]
         self.server.ss.peer_addrs = [paddr for paddr in self.server.ss.peer_addrs if peer_port not in paddr]
 
+    def _set_relay_limit_and_msg_text_on_send(self):
+        rl_str, self.msg_content = self.msg_data.split("|", maxsplit=1)
+        self.relay_limit = int(rl_str)
+
     def _init_new_msg_attrs(self, msg_id):
         return {
             "in_paths":   [],
@@ -127,8 +133,8 @@ class GossipMessageHandler(StreamRequestHandler):
 
     def _relay_to_peers(self, data):
         for p in self._get_peers_to_relay():
-            if self.curr_msg_attrs["out_counts"][p.id] < RELAY_COUNTS:
-                p.send_message(json.dumps(data), is_relay=True)
+            if self.curr_msg_attrs["out_counts"][p.id] < self.relay_limit:
+                p.send_message(json.dumps(data), is_relay=True, relay_limit=self.relay_limit)
                 self.curr_msg_attrs["out_counts"][p.id] += 1
 
     def _get_peers_to_relay(self):

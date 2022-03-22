@@ -19,7 +19,7 @@ class GossipClient:
     def send_message(self, message, is_relay=False, relay_limit=1):
         """Send a message to the current server."""
         cmd = "/RELAY" if is_relay else "/NEW"
-        self._send_to_server(f"{cmd}:{message}")
+        self._send_to_server(f"{cmd}:{relay_limit}|{message}")
 
     @staticmethod
     def _parse_msg_id(msg_id: str):
