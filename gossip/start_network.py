@@ -45,15 +45,14 @@ def start_network(network_type, num_nodes, random_k_deg=None, plot=False):
     network = NetworkCls(*ncls_args)
 
     pids_map = {}
-    subprocs = [mp.Process(target=start_server, args=(network, node_id)) for node_id in network.G.nodes]
-    for node_id, proc in enumerate(subprocs, start=1):
+    subprocs = {node_id: mp.Process(target=start_server, args=(network, node_id)) for node_id in network.G.nodes}
+    for node_id, proc in subprocs.items():
         proc.start()
         pids_map[node_id] = proc.pid
 
     if plot:
         plt_proc = plot_network(network, pids_map)
-        subprocs.append(plt_proc)
 
     sp.write_pids_map_to_file(pids_map)
-    for proc in subprocs:
+    for proc in subprocs.values():
         proc.join()
