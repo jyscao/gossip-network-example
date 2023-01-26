@@ -67,7 +67,7 @@ class GossipMessageHandler(StreamRequestHandler):
         self._set_relay_limit_and_msg_text_on_send()
         new_msg_timestamp = time.time_ns()
         self.msg_id = f"{self.msg_content}_{new_msg_timestamp}"
-        self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs(self.msg_id)
+        self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs()
         self.node_path = [self.server.ss.node_id]
         self._save_path_and_relay()
 
@@ -79,7 +79,7 @@ class GossipMessageHandler(StreamRequestHandler):
         if self.msg_id in self.server.ss.msgs_box:
             self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id]
         else:
-            self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs(self.msg_id)
+            self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs()
 
         self.curr_msg_attrs["in_counts"][pn] += 1
         within_receive_limit = self.curr_msg_attrs["in_counts"][pn] <= self.relay_limit
@@ -119,7 +119,7 @@ class GossipMessageHandler(StreamRequestHandler):
         rl_str, self.msg_content = self.msg_data.split("|", maxsplit=1)
         self.relay_limit = int(rl_str)
 
-    def _init_new_msg_attrs(self, msg_id):
+    def _init_new_msg_attrs(self):
         return {
             "in_paths":   [],
             "in_counts":  Counter({p.id: 0 for p in self.server.ss.peers}),
