@@ -65,8 +65,7 @@ class GossipMessageHandler(StreamRequestHandler):
 
     def _proc_new_msg(self):
         self._set_relay_limit_and_msg_text_on_send()
-        new_msg_timestamp = time.time_ns()
-        self.msg_id = f"{self.msg_content}_{new_msg_timestamp}"
+        self.msg_id = f"{self.msg_content}_{time.time_ns()}"    # TODO: hash this value to create a constant length value
         self.curr_msg_attrs = self.server.ss.msgs_box[self.msg_id] = self._init_new_msg_attrs()
         self.node_path = [self.server.ss.node_id]
         self._save_path_and_relay()
