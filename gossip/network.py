@@ -16,7 +16,7 @@ class GossipNetwork(ABC):
         pass
 
     def get_peers_for_node(self, node_id):
-        return self.G[node_id]
+        return self.G[node_id]  # this returns an AtlasView (read-only dict-of-dict data struct) object
 
     def show_graph(self):
         import matplotlib.pyplot as plt

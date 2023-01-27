@@ -7,7 +7,7 @@ class GossipClient:
     """A client interface to connect to a server in a peer-to-peer gossip network."""
 
     def __init__(self, address):
-        self.address = address
+        self.address = address  # this property is used in GossipMessageHandler._get_peers_info
         host, port = self.address.split(":")
         self.host_port_tup = (host, int(port))
         self.id = int(port) - PORTS_ORIGIN
