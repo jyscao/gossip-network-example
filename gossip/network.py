@@ -6,8 +6,8 @@ class GossipNetwork(ABC):
 
     def __init__(self, num_nodes):
         self.num_nodes = num_nodes
-        self.nodes_ls = range(1, self.num_nodes + 1)
         self.G = self._get_network_graph()
+        self.node_color = ""        # this is set in each subclass
         self.edge_color = "black"   # the default edge color to be used
 
     @abstractmethod
@@ -19,12 +19,8 @@ class GossipNetwork(ABC):
 
     def show_graph(self):
         import matplotlib.pyplot as plt
-        self._draw_network(**{"with_labels": True, "edge_color":  self._get_edge_colors(),})
+        nx.draw_networkx(self.G, node_color=self.node_color, **{"with_labels": True, "edge_color":  self._get_edge_colors(),})
         plt.show()
-
-    @abstractmethod
-    def _draw_network(self):
-        pass
 
     def _get_edge_colors(self):
         if self.edge_color is not None:
@@ -43,11 +39,12 @@ class GossipNetwork(ABC):
 
 class CircularNetwork(GossipNetwork):
 
-    def _get_network_graph(self):
-        return nx.cycle_graph(self.nodes_ls)
+    def __init__(self, num_nodes):
+        super().__init__(num_nodes)
+        self.node_color = "cyan"
 
-    def _draw_network(self, **kwargs):
-        nx.draw_circular(self.G, node_color="cyan", **kwargs)
+    def _get_network_graph(self):
+        return nx.cycle_graph(range(1, self.num_nodes + 1))
 
 
 class RandomRegularNetwork(GossipNetwork):
@@ -55,15 +52,13 @@ class RandomRegularNetwork(GossipNetwork):
     def __init__(self, num_nodes, k_degrees):
         self.k_deg = k_degrees
         super().__init__(num_nodes)
+        self.node_color = "yellow"
         self.edge_color, self.edge_cardinality = None, self.k_deg
 
     def _get_network_graph(self):
         G = nx.random_regular_graph(self.k_deg, self.num_nodes)
         nx.relabel_nodes(G, {0: self.num_nodes}, copy=False)
         return G
-
-    def _draw_network(self, **kwargs):
-        nx.draw_networkx(self.G, node_color="yellow", **kwargs)
 
 
 class PowerlawClusterNetwork(GossipNetwork):
@@ -72,12 +67,10 @@ class PowerlawClusterNetwork(GossipNetwork):
         self.m_edges = m_edges
         self.p_triangle = p_triangle
         super().__init__(num_nodes)
+        self.node_color = "lawngreen"
         self.edge_color, self.edge_cardinality = None, self.m_edges
 
     def _get_network_graph(self):
         G = nx.powerlaw_cluster_graph(self.num_nodes, self.m_edges, self.p_triangle)
         nx.relabel_nodes(G, {0: self.num_nodes}, copy=False)
         return G
-
-    def _draw_network(self, **kwargs):
-        nx.draw_networkx(self.G, node_color="lawngreen", **kwargs)
