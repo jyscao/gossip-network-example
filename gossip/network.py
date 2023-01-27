@@ -7,6 +7,7 @@ class GossipNetwork(ABC):
     def __init__(self, num_nodes):
         self.num_nodes = num_nodes
         self.G = self._get_network_graph()
+        nx.relabel_nodes(self.G, {0: self.num_nodes}, copy=False)   # change graph to be 1-indexed
         self.node_color = ""        # this is set in each subclass
         self.edge_color = "black"   # the default edge color to be used
 
@@ -44,7 +45,7 @@ class CircularNetwork(GossipNetwork):
         self.node_color = "cyan"
 
     def _get_network_graph(self):
-        return nx.cycle_graph(range(1, self.num_nodes + 1))
+        return nx.cycle_graph(self.num_nodes)
 
 
 class RandomRegularNetwork(GossipNetwork):
@@ -56,9 +57,7 @@ class RandomRegularNetwork(GossipNetwork):
         self.edge_color, self.edge_cardinality = None, self.k_deg
 
     def _get_network_graph(self):
-        G = nx.random_regular_graph(self.k_deg, self.num_nodes)
-        nx.relabel_nodes(G, {0: self.num_nodes}, copy=False)
-        return G
+        return nx.random_regular_graph(self.k_deg, self.num_nodes)
 
 
 class PowerlawClusterNetwork(GossipNetwork):
@@ -71,6 +70,4 @@ class PowerlawClusterNetwork(GossipNetwork):
         self.edge_color, self.edge_cardinality = None, self.m_edges
 
     def _get_network_graph(self):
-        G = nx.powerlaw_cluster_graph(self.num_nodes, self.m_edges, self.p_triangle)
-        nx.relabel_nodes(G, {0: self.num_nodes}, copy=False)
-        return G
+        return nx.powerlaw_cluster_graph(self.num_nodes, self.m_edges, self.p_triangle)
