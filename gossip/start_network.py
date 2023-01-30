@@ -22,8 +22,8 @@ def start_server(network_graph, node_id):
 
 
 def get_network(network_type, num_nodes, extra_graph_params):
+    random_k_deg = extra_graph_params.pop("random_k_deg")
     if network_type == "random":
-        random_k_deg = extra_graph_params.pop("random_k_deg")
         assert random_k_deg is not None
         assert num_nodes * random_k_deg % 2 == 0, "(num-nodes × degree) must be an even number for a regular graph"
 
