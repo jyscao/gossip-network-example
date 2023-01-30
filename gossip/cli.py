@@ -90,7 +90,8 @@ def main():
         num_nodes = int(args["--num-nodes"])
         network_type = get_network_type(args)
         random_k_deg = int(args["<degree>"]) if args["<degree>"] else 3
-        start_network(network_type, num_nodes, random_k_deg, args["--plot"])
+        extra_graph_params = {"random_k_deg": random_k_deg if network_type == "random" else None}
+        start_network(network_type, num_nodes, extra_graph_params, args["--plot"])
 
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
