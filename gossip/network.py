@@ -70,4 +70,5 @@ class PowerlawClusterNetwork(GossipNetwork):
         return nx.powerlaw_cluster_graph(self.num_nodes, self.m_edges, self.p_triangle)
 
     def _draw_network(self):
-        nx.draw_networkx(self.G, node_color="lawngreen", edge_color=self._get_dynamic_edge_colors())
+        pos = nx.shell_layout(self.G)
+        nx.draw_networkx(self.G, pos=pos, node_color="lawngreen", edge_color=self._get_dynamic_edge_colors())
