@@ -22,11 +22,10 @@ class GossipNetwork(ABC):
         self._draw_network()
         plt.show()
 
-    @abstractmethod
     def _draw_network(self):
-        pass
+        nx.draw_networkx(self.G)
 
-    def _get_dynamic_edge_color(self):
+    def _get_dynamic_edge_colors(self):
         palette = GossipNetwork._select_palette(self.edge_cardinality)
         mult, rem = divmod(len(self.G.edges), self.edge_cardinality)
         return palette * mult + palette[:rem]
@@ -44,7 +43,7 @@ class CircularNetwork(GossipNetwork):
         return nx.cycle_graph(range(self.num_nodes))
 
     def _draw_network(self):
-        nx.draw_circular(self.G, with_labels=True, node_color="cyan", edge_color="black")
+        nx.draw_circular(self.G, node_color="cyan", edge_color="black")
 
 
 class RandomRegularNetwork(GossipNetwork):
@@ -57,7 +56,7 @@ class RandomRegularNetwork(GossipNetwork):
         return nx.random_regular_graph(self.k_deg, self.num_nodes)
 
     def _draw_network(self):
-        nx.draw_networkx(self.G, with_labels=True, node_color="yellow", edge_color=self._get_dynamic_edge_color())
+        nx.draw_networkx(self.G, node_color="yellow", edge_color=self._get_dynamic_edge_colors())
 
 
 class PowerlawClusterNetwork(GossipNetwork):
@@ -71,4 +70,4 @@ class PowerlawClusterNetwork(GossipNetwork):
         return nx.powerlaw_cluster_graph(self.num_nodes, self.m_edges, self.p_triangle)
 
     def _draw_network(self):
-        nx.draw_networkx(self.G, with_labels=True, node_color="lawngreen", edge_color=self._get_dynamic_edge_color())
+        nx.draw_networkx(self.G, node_color="lawngreen", edge_color=self._get_dynamic_edge_colors())
