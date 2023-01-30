@@ -19,20 +19,17 @@ class GossipNetwork(ABC):
 
     def show_graph(self):
         import matplotlib.pyplot as plt
-        self._draw_network(**{"with_labels": True, "edge_color":  self._get_edge_colors(),})
+        self._draw_network()
         plt.show()
 
     @abstractmethod
     def _draw_network(self):
         pass
 
-    def _get_edge_colors(self):
-        if self.edge_color is not None:
-            return self.edge_color
-        else:
-            palette = GossipNetwork._select_palette(self.edge_cardinality)
-            mult, rem = divmod(len(self.G.edges), self.edge_cardinality)
-            return palette * mult + palette[:rem]
+    def _get_dynamic_edge_color(self):
+        palette = GossipNetwork._select_palette(self.edge_cardinality)
+        mult, rem = divmod(len(self.G.edges), self.edge_cardinality)
+        return palette * mult + palette[:rem]
 
     @staticmethod
     def _select_palette(cardinality: int):
@@ -46,34 +43,32 @@ class CircularNetwork(GossipNetwork):
     def _get_network_graph(self):
         return nx.cycle_graph(range(self.num_nodes))
 
-    def _draw_network(self, **kwargs):
-        nx.draw_circular(self.G, node_color="cyan", **kwargs)
+    def _draw_network(self):
+        nx.draw_circular(self.G, with_labels=True, node_color="cyan", edge_color="black")
 
 
 class RandomRegularNetwork(GossipNetwork):
 
     def __init__(self, num_nodes, k_degrees):
-        self.k_deg = k_degrees
+        self.k_deg = self.edge_cardinality = k_degrees
         super().__init__(num_nodes)
-        self.edge_color, self.edge_cardinality = None, self.k_deg
 
     def _get_network_graph(self):
         return nx.random_regular_graph(self.k_deg, self.num_nodes)
 
-    def _draw_network(self, **kwargs):
-        nx.draw_networkx(self.G, node_color="yellow", **kwargs)
+    def _draw_network(self):
+        nx.draw_networkx(self.G, with_labels=True, node_color="yellow", edge_color=self._get_dynamic_edge_color())
 
 
 class PowerlawClusterNetwork(GossipNetwork):
 
     def __init__(self, num_nodes, m_edges=3, p_triangle=0.5):
-        self.m_edges = m_edges
+        self.m_edges = self.edge_cardinality = m_edges
         self.p_triangle = p_triangle
         super().__init__(num_nodes)
-        self.edge_color, self.edge_cardinality = None, self.m_edges
 
     def _get_network_graph(self):
         return nx.powerlaw_cluster_graph(self.num_nodes, self.m_edges, self.p_triangle)
 
-    def _draw_network(self, **kwargs):
-        nx.draw_networkx(self.G, node_color="lawngreen", **kwargs)
+    def _draw_network(self):
+        nx.draw_networkx(self.G, with_labels=True, node_color="lawngreen", edge_color=self._get_dynamic_edge_color())
