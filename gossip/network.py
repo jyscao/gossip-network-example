@@ -72,3 +72,30 @@ class PowerlawClusterNetwork(GossipNetwork):
     def _draw_network(self):
         pos = nx.shell_layout(self.G)
         nx.draw_networkx(self.G, pos=pos, node_color="lawngreen", edge_color=self._get_dynamic_edge_colors())
+
+
+class TuranNetwork(GossipNetwork):
+
+    def __init__(self, num_nodes, r_partitions):
+        self.r_parts = r_partitions
+        super().__init__(num_nodes)
+        # TODO: relabel nodes sequentially by incrementing all node integer labels by 1
+
+    def _get_network_graph(self):
+        return nx.turan_graph(self.num_nodes, self.r_parts)
+
+    def _draw_network(self):
+        turan_pos = nx.multipartite_layout(self.G)
+        nx.draw_networkx(self.G, pos=turan_pos, node_color=self.__get_node_colors(), edge_color="black")
+
+    def __get_node_colors(self):
+        n2c_map = {n: tuple(self.G.neighbors(n)) for n in self.G.nodes}
+        part_conns = set(n2c_map.values())
+        assert len(part_conns) == self.r_parts
+        part_conns_colors = {conns: color for conns, color in zip(part_conns, self.__get_palette())}
+        return [part_conns_colors[n2c_map[n]] for n in self.G.nodes]
+
+    def __get_palette(self):
+        # TODO: need to handle case when r_partitions > hardcoded list of colors below
+        return ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple",
+                "tab:brown", "tab:pink", "tab:gray", "tab:olive", "tab:cyan",][:self.r_parts]

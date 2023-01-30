@@ -23,14 +23,20 @@ def start_server(network_graph, node_id):
 
 def get_network(network_type, num_nodes, extra_graph_params):
     random_k_deg = extra_graph_params.pop("random_k_deg")
+    turan_r_part = extra_graph_params.pop("turan_r_part")
     if network_type == "random":
         assert random_k_deg is not None
+        assert num_nodes > random_k_deg
         assert num_nodes * random_k_deg % 2 == 0, "(num-nodes × degree) must be an even number for a regular graph"
+    elif network_type == "turan":
+        assert turan_r_part is not None
+        assert 1 <= turan_r_part <= num_nodes
 
     return {
         "circular": (CircularNetwork,        (num_nodes,)),
         "random":   (RandomRegularNetwork,   (num_nodes, random_k_deg)),
         "powerlaw": (PowerlawClusterNetwork, (num_nodes,)),
+        "turan":    (TuranNetwork,           (num_nodes, turan_r_part)),
     }[network_type]
 
 
@@ -43,7 +49,7 @@ def plot_network(network, pids_map):    # plt.show() in separate process as to n
 
 def start_network(network_type, num_nodes, extra_graph_params=None, plot=False):
     if extra_graph_params is None:  # TODO: can remove this check after adding type hints
-        extra_graph_params = {"random_k_deg": None}
+        extra_graph_params = {"random_k_deg": None, "turan_r_part": None}
     NetworkCls, ncls_args = get_network(network_type, num_nodes, extra_graph_params)
     network = NetworkCls(*ncls_args)
 

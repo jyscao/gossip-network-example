@@ -1,7 +1,7 @@
 """Gossip.
 
 Usage:
-  gossip start-network [circular | powerlaw | random [<degree>]] [-n <nn>] [-P]
+  gossip start-network [circular | powerlaw | random [<degree>] | turan [<partition>]] [-n <nn>] [-P]
   gossip stop-network
   gossip send-message <node-number> <message> [-r <count>]
   gossip get-messages <node-number> [unread | read | all] [[-p] [-pp] | [-A]] [-t...]
@@ -10,6 +10,7 @@ Usage:
 
 --Options:
   <degree>                      The degree of connectedness for each node in a random regular graph [default: 3]
+  <partition>                   The number of partitions when generating a Turán graph [default: 4]
   -n <nn>, --num-nodes <nn>     Number of nodes to initialize the Gossip Network with [default: 16]
   -P, --plot                    Plot the network graph on start-network (requires matplotlib)
 
@@ -42,6 +43,8 @@ def get_network_type(docopt_args_dict):
         return "circular"
     elif docopt_args_dict["powerlaw"]:
         return "powerlaw"
+    elif docopt_args_dict["turan"]:
+        return "turan"
     else:
         return "random"
 
@@ -90,7 +93,9 @@ def main():
         num_nodes = int(args["--num-nodes"])
         network_type = get_network_type(args)
         random_k_deg = int(args["<degree>"]) if args["<degree>"] else 3
-        extra_graph_params = {"random_k_deg": random_k_deg if network_type == "random" else None}
+        turan_r_part = int(args["<partition>"]) if args["<partition>"] else 4
+        extra_graph_params = { "random_k_deg": random_k_deg if network_type == "random" else None,
+                              "turan_r_part": turan_r_part if network_type == "turan" else None, }
         start_network(network_type, num_nodes, extra_graph_params, args["--plot"])
 
     elif args["stop-network"]:
