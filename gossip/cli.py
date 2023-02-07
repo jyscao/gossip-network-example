@@ -131,10 +131,10 @@ def main():
         if comp_proc.returncode == 0:
             for p in peer_ids:
                 init_gossip_client(p).remove_peer(node_number)
-            print(f"Gossip node {node_number} removed")
+            print(f"{client} removed")
             sp.write_pids_map_to_file(pids_map)
         else:
-            print(f"Failed to remove Gossip node {node_number}")
+            print(f"Failed to remove {client}")
 
     elif args["list-peers"]:
         client = init_gossip_client(args["<node-number>"])
