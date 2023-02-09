@@ -43,7 +43,7 @@ class CircularNetwork(GossipNetwork):
         return nx.cycle_graph(range(self.num_nodes))
 
     def _draw_network(self):
-        nx.draw_circular(self.G, node_color="cyan", edge_color="black")
+        nx.draw_circular(self.G, with_labels=True, node_color="cyan", edge_color="black")
 
 
 class RandomRegularNetwork(GossipNetwork):
