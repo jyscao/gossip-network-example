@@ -124,7 +124,7 @@ poetry run gossip list-peers 5
 
 ## Status
 
-This project is created strictly for self educational, with no practical
+This project was created strictly for self-education, with no practical
 utilities, nor commitments to further development.
 
-See my [blog post]() for a detailed walkthrough.
+See my [blog post]() for a detailed write-up.
