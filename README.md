@@ -1,92 +1,63 @@
-# Gossip Network Assignment
+# Gossip Network Example
 
-## Introduction
+This is an example of a simple peer-to-peer network of servers that
+communicate with each other using a gossip protocol. Where a message submitted
+to a single node is eventually received by **all nodes** in the network.
 
-The goal of this assignment is to build a simple peer-to-peer network of servers that communicate with each other using a gossip protocol.
 
-## Requirements
 
-- The network must support up to 16 individual servers (nodes) running simultaneously.
-- At any given time, each node can only have knowledge of 3 other nodes in the network.
-- At minimum, each node must provide two API methods:
+## Project Setup
 
-```py
-def submit_message(message: str) -> None:
-    """Handle an incoming message."""
+To run this on your own computer, all you need are Python 3.9+ and basic Unix
+tooling (specifically `kill` & `xargs`).
 
-def get_messages() -> List[str]:
-    """Returns a list of all messages since this node started.
+The project's Python dependencies are managed using [Poetry](https://python-poetry.org/),
+which you may install yourself manually; or as I prefer, using an environment
+manager such as [Conda](https://docs.conda.io/en/latest/).
 
-    Each message should include the path it followed to reach this node.
-    
-    Example output:
-    - Apple (Node 1 -> Node 8 -> Node 10)
-    - Banana (Node 3 -> Node 5 -> Node 10)
-    - Orange (Node 7 -> Node 15 -> Node 9 -> Node 10)
-    """
-```
-- A message submitted to a single node should eventually be received by **all nodes** in the network.
-- Nodes can only communicate with each other through network calls (not in-process function calls). The actual networking protocol is up to you, so feel free to choose between TCP, UDP, HTTP, etc.
-- Your solution must be implemented in Python.
-
-## Installation
-
-This assignment requires you to have Python 3.7 and basic Unix tooling installed on your system. If you don't already have Python, please follow the instructions below:
-
-- [Python setup instructions](https://docs.python.org/3/using/index.html)
-- Basic Unix command line tools (specifically `kill` & `xargs`) are available by default on Linux and macOS, as well as on Windows through WSL or MinGW.
-
-### Project setup
-
-This codebase uses [Poetry](https://poetry.eustace.io/) to manage the Python environment and dependencies. Poetry can be installed on most systems with the following command:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-```
-
-After cloning this repo, you can use Poetry to install the dependencies:
+After cloning this repo, setting up your Python environment (with poetry), you
+can use install the Python dependencies with:
 
 ```bash
 poetry install
 ```
 
-## Getting started
 
-We have provided you with a basic template to help you get started on this assignment. This template contains a skeleton Python project.
-
-*__Important__: Although it's encouraged, you are not required to use the provided starter code. Feel free to start from scratch if you don't find it useful.*
-
-**GossipClient**
-
-The [GossipClient](gossip/client.py) class is a stub implementation of the client interface for a node. It should be able to make network calls to a `GossipServer`.
-
-A `GossipClient` instance is initialized with the address of a node.
-
-**GossipServer**
-
-The [GossipServer](gossip/server.py) class is a stub implementation of a node's server. It should be able to respond to network calls made by a `GossipClient`.
 
 ## Commands
 
-We have provided you with a simple CLI to test your solution. 
+All interactions with the network take place through a simple CLI. To see the
+full usage details of the CLI, run:
+
+```bash
+poetry run gossip -h
+```
 
 ### start-network
 
-The `start-network` command spins up a network of 16 nodes using Python's `multiprocessing` module. Each node runs as a separate Python process and is exposed at a unique port number ranging from 7001-7016.
+The `start-network` command spins up a network of 16 nodes (by default) using
+Python's `multiprocessing` module. Each node runs as a separate Python process
+and is exposed at a unique port number ranging from 7001-7016. The default
+*random network* starts with 3 neighbors assinged to each node.
 
-Each node is initialized with the addresses of two other peers in the network. This creates a simple network topology, but you are encouraged to find more optimal structures.
+**Example usages:**
 
-**Example usage:**
+```bash
+# start the default random network, and plot its topology
+poetry run gossip start-network --plot
 
-```
-poetry run gossip start-network
+# start a random network where all nodes have 5 neighboring connections
+poetry run gossip start-network random 5
+
+# start a circularly connected network with 32 nodes
+poetry run gossip start-network circular --num-nodes=32
 ```
 
 ### stop-network
 
-The `stop-network` command stops any nodes currently running in the test network.
+The `stop-network` command stops all nodes running in the network.
 
-**Example usage:**
+**Usage:**
 
 ```
 poetry run gossip stop-network
@@ -94,42 +65,42 @@ poetry run gossip stop-network
 
 ### send-message
 
-The `send-message` command can be used to send a message to a node in the network. This command should only be used after the network has been started with `start-network`.
+The `send-message` command sends a message to a node in the network after it
+has been started with `start-network`.
 
-**Arguments:**
-
-- `node-number`: The node number to connect to. Must be between 1-16.
-- `message`: The message to send. Must be a single phrase with no spaces.
-
-**Example usage:**
+**Example usages:**
 
 ```bash
 # Send the message "apple" to node 4
 poetry run gossip send-message 4 apple
+
+# Send the message "banana" to node 8, where each node broadcasts the message
+# 3× to its neighbors
+poetry run gossip send-message 8 banana --relays=3
 ```
 
 ### get-messages
 
-The `get-messages` command returns all messages that have been received by a single node.
+The `get-messages` command returns messages that have been received by a
+single node.
 
-**Arguments:**
-
-- `node-number`: The node number to connect to. Must be between 1-16.
-
-**Example usage:**
+**Example usages:**
 
 ```bash
 # Get all messages received by node 8
 poetry run gossip get-messages 8
+
+# Get only unread messages received by node 3
+poetry run gossip get-messages 3 unread
+
+# Get only read messages received by node 3, along with their received times,
+# showing the shortest path taken
+poetry run gossip get-messages 3 read -p --time
 ```
 
 ### remove-node
 
 The `remove-node` command stops a single node in the network.
-
-**Arguments:**
-
-- `node-number`: The node number to remove. Must be between 1-16.
 
 **Example usage:**
 
@@ -138,12 +109,22 @@ The `remove-node` command stops a single node in the network.
 poetry run gossip remove-node 9
 ```
 
-## FAQ
+### list-peers
 
-**Can I make use of third-party libraries?**
+The `list-peers` command displays all peers for a single node in the network.
 
-Yes, you may use any third-party library. In this project you can add Python packages to the project with `poetry add <package-name>`.
+**Example usage:**
 
-**How will this assignment be assessed?**
+```bash
+# List the peers for node 5
+poetry run gossip list-peers 5
+```
 
-Your solution should demonstrate the key components of a robust distributed system. While the code itself should be clean and readable, your solution will be evaluated based on its functionality.
+
+
+## Status
+
+This project is created strictly for self educational, with no practical
+utilities, nor commitments to further development.
+
+See my [blog post]() for a detailed walkthrough.
