@@ -56,10 +56,10 @@ class GossipMessageHandler(StreamRequestHandler):
 
     def _get_cmd_handler(self):
         return {
-            "/NEW":   self._proc_new_msg,
-            "/RELAY": self._proc_relayed_msg,
-            "/GET":   self._send_client_msgs_data,
-            "/PEERS": self._get_peers_info,
+            "/NEW":    self._proc_new_msg,
+            "/RELAY":  self._proc_relayed_msg,
+            "/GET":    self._send_client_msgs_data,
+            "/PEERS":  self._get_peers_info,
             "/REMOVE": self._remove_peer,
         }[self.cmd]
 
