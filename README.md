@@ -2,7 +2,8 @@
 
 This is an example of a simple peer-to-peer network of servers that
 communicate with each other using a gossip protocol. Where a message submitted
-to a single node is eventually received by **all nodes** in the network.
+to a single node is eventually received by **all nodes** in the network,
+thereby reaching [eventual consistency](https://en.wikipedia.org/wiki/Eventual_consistency).
 
 
 
@@ -127,4 +128,5 @@ poetry run gossip list-peers 5
 This project was created strictly for self-education, with no practical
 utilities, nor commitments to further development.
 
-See my [blog post]() for a detailed write-up.
+See my [blog post](https://jyscao.xyz/gossip-network-example.html) for a
+walkthrough.
