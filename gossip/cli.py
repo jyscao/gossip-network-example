@@ -84,7 +84,7 @@ def format_msg_w_time(docopt_args_dict, msg_ts_tup):
 
 
 def main():
-    args = docopt(__doc__, version="Gossip 0.1")
+    args = docopt(__doc__, version="Gossip 0.9.0")
 
     if args["start-network"]:
         num_nodes = int(args["--num-nodes"])
