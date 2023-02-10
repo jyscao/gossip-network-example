@@ -95,7 +95,7 @@ def main():
 
     elif args["stop-network"]:
         pids_ls_str = " ".join(str(pid) for pid in sp.read_server_pids_to_map().values())
-        comp_proc = subprocess.run([f"echo {pids_ls_str} | xargs -n1 -I% kill %"], shell=True)
+        comp_proc = subprocess.run(f"echo {pids_ls_str} | xargs -n1 kill", shell=True)
         if comp_proc.returncode == 0:
             print("Gossip network stopped")
             sp.write_pids_map_to_file({})
