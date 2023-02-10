@@ -17,22 +17,15 @@ which you may install yourself manually; or as I prefer, using an environment
 manager such as [Conda](https://docs.conda.io/en/latest/).
 
 After cloning this repo, setting up your Python environment (with poetry), you
-can use install the Python dependencies with:
-
-```bash
-poetry install
-```
+can use install the Python dependencies with `$ poetry install`.
 
 
 
 ## Commands
 
-All interactions with the network take place through a simple CLI. To see the
-full usage details of the CLI, run:
-
-```bash
-poetry run gossip -h
-```
+All interactions with the network take place through a simple CLI; to see its
+full usage details, just run `$ poetry run gossip -h`. The following are some
+select examples.
 
 ### start-network
 
